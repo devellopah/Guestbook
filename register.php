@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/incs/db.php';
 require_once __DIR__ . '/incs/functions.php';
 
@@ -9,6 +10,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $data = load(['name', 'email', 'password']);
 
+    $v = new \Valitron\Validator($data);
+    $v->rules([
+        'required' => ['name', 'email', 'password'],
+        'email' => ['email'],
+        'lengthMin' => [
+            ['password', 6]
+        ],
+        'lengthMax' => [
+            ['name', 50],
+            ['email', 50],
+        ]
+    ]);
+
+    if ($v->validate()) {
+        echo 'OK';
+    } else {
+        dump($v->errors());
+    }
 }
 
 ?>
@@ -27,12 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <form method="post">
 
                 <div class="form-floating mb-3">
-                    <input type="text" name="name" class="form-control" id="name" placeholder="Name">
+                    <input type="text" name="name" class="form-control" id="name" placeholder="Name" value="<?= old('name') ?>">
                     <label for="name">Name</label>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input type="email" name="email" class="form-control" id="email" placeholder="name@example.com">
+                    <input type="email" name="email" class="form-control" id="email" placeholder="name@example.com" value="<?= old('email') ?>">
                     <label for="email">Email</label>
                 </div>
 

@@ -19,3 +19,14 @@ function load(array $fillable, $post = true): array
     }
     return $data;
 }
+
+function h(string $s): string
+{
+    return htmlspecialchars($s, ENT_QUOTES);
+}
+
+function old(string $name, $post = true): string
+{
+    $load_data = $post ? $_POST : $_GET;
+    return isset($load_data[$name]) ? h($load_data[$name]) : '';
+}

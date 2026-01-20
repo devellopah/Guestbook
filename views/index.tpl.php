@@ -51,76 +51,50 @@
 
         <div class="col-12">
 
-            <div class="card mb-3">
-                <div class="card-body">
+            <?php if (!empty($messages)): ?>
+                <?php foreach ($messages as $message): ?>
+                    <div class="card mb-3 <?php if (!$message['status']) echo 'border-danger' ?>" id="message-<?= $message['id'] ?>">
+                        <div class="card-body">
 
-                    <div class="d-flex justify-content-between">
-                        <h5 class="card-title">User 1</h5>
-                        <p class="message-created">2023-07-23 12:10</p>
-                    </div>
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title"><?= $message['name'] ?></h5>
+                                <p class="message-created"><?= $message['created_at'] ?></p>
+                            </div>
 
-                    <div class="card-text">
-                        Some quick example text to build on the card title and make up the bulk of the card's content.
-                    </div>
+                            <div class="card-text">
+                                <?= nl2br(h($message['message'])) ?>
+                            </div>
 
-                    <div class="card-actions mt-2">
-                        <p>
-                            <a href="#">Disable</a> |
-                            <a href="#">Approve</a> |
-                            <a data-bs-toggle="collapse" href="#collapse-1">Edit</a>
-                        </p>
+                            <?php if (check_admin()): ?>
 
-                        <div class="collapse" id="collapse-1">
-                            <form action="">
-                                <div class="form-floating">
-                                    <textarea class="form-control" placeholder="Leave a comment here" id="message-1"
-                                              style="height: 100px">Some placeholder content for the collapse component. This panel is hidden by default but revealed when the user activates the relevant trigger.</textarea>
-                                    <label for="message-1">Comments</label>
+                                <div class="card-actions mt-2">
+                                    <p>
+                                        <a href="#">Disable</a> |
+                                        <a href="#">Approve</a> |
+                                        <a data-bs-toggle="collapse" href="#collapse-<?= $message['id'] ?>">Edit</a>
+                                    </p>
+
+                                    <div class="collapse" id="collapse-<?= $message['id'] ?>">
+                                        <form action="">
+                                            <div class="form-floating">
+                                    <textarea class="form-control" placeholder="Leave a comment here" id="message-<?= $message['id'] ?>"
+                                              style="height: 100px"><?= $message['message'] ?></textarea>
+                                                <label for="message-<?= $message['id'] ?>">Comments</label>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary mt-3">Save</button>
+                                        </form>
+                                    </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary mt-3">Save</button>
-                            </form>
+                            <?php endif; ?>
+
                         </div>
                     </div>
-
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-                        <h5 class="card-title">User 1</h5>
-                        <p class="message-created">2023-07-20 12:10</p>
-                    </div>
-
-                    <div class="card-text">
-                        Some quick example text to build on the card title and make up the bulk of the card's content
-                        2...
-                    </div>
-
-                    <div class="card-actions mt-2">
-                        <p>
-                            <a href="#">Disable</a> |
-                            <a href="#">Approve</a> |
-                            <a data-bs-toggle="collapse" href="#collapse-2">Edit</a>
-                        </p>
-
-                        <div class="collapse" id="collapse-2">
-                            <form action="">
-                                <div class="form-floating">
-                                    <textarea class="form-control" placeholder="Leave a comment here" id="message-2"
-                                              style="height: 100px">Some placeholder content for the collapse component. This panel is hidden by default but revealed when the user activates the relevant trigger.</textarea>
-                                    <label for="message-2">Comments</label>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary mt-3">Save</button>
-                            </form>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>Messages not found...</p>
+            <?php endif; ?>
 
         </div>
 

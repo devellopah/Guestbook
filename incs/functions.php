@@ -103,6 +103,18 @@ function save_message(array $data): bool
     return true;
 }
 
+function get_messages(): array
+{
+    global $db;
+    $where = '';
+    if (!check_admin()) {
+        $where = 'WHERE status = 1';
+    }
+    $stmt = $db->prepare("SELECT m.id, m.user_id, m.message, m.status, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at, users.name FROM messages m JOIN users ON users.id = m.user_id {$where}");
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
 function check_auth(): bool
 {
     return isset($_SESSION['user']);

@@ -103,16 +103,27 @@ function save_message(array $data): bool
     return true;
 }
 
-function get_messages(): array
+function get_messages(int $start, int $per_page): array
 {
     global $db;
     $where = '';
     if (!check_admin()) {
         $where = 'WHERE status = 1';
     }
-    $stmt = $db->prepare("SELECT m.id, m.user_id, m.message, m.status, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at, users.name FROM messages m JOIN users ON users.id = m.user_id {$where}");
+    $stmt = $db->prepare("SELECT m.id, m.user_id, m.message, m.status, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at, users.name FROM messages m JOIN users ON users.id = m.user_id {$where} LIMIT $start, $per_page");
     $stmt->execute();
     return $stmt->fetchAll();
+}
+
+function get_count_messages(): int
+{
+    global $db;
+    $where = '';
+    if (!check_admin()) {
+        $where = 'WHERE status = 1';
+    }
+    $res = $db->query("SELECT COUNT(*) FROM messages {$where}");
+    return $res->fetchColumn();
 }
 
 function check_auth(): bool

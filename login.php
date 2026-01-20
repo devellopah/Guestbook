@@ -6,6 +6,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/incs/db.php';
 require_once __DIR__ . '/incs/functions.php';
 
+if (check_auth()) {
+    redirect('index.php');
+}
+
 $title = 'Login';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

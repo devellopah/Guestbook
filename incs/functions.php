@@ -88,3 +88,13 @@ function login(array $data): bool
     $_SESSION['success'] = 'Successfully login';
     return true;
 }
+
+function check_auth(): bool
+{
+    return isset($_SESSION['user']);
+}
+
+function check_admin(): bool
+{
+    return isset($_SESSION['user']) && $_SESSION['user']['role'] == 2;
+}

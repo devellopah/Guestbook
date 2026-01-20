@@ -6,6 +6,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/incs/db.php';
 require_once __DIR__ . '/incs/functions.php';
 
+if (check_auth()) {
+    redirect('index.php');
+}
+
 $title = 'Register';
 
 /** @var PDO $db */

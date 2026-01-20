@@ -27,21 +27,23 @@
 
         </div>
 
-        <form action="" class="mb-2">
+        <?php if (check_auth()): ?>
+            <form method="post" class="mb-2">
 
-            <div class="form-floating">
-                <textarea class="form-control" placeholder="Leave a comment here" id="send-message"
+                <div class="form-floating">
+                <textarea name="message" class="form-control" placeholder="Leave a comment here" id="send-message"
                           style="height: 100px"></textarea>
-                <label for="send-message">Comments</label>
+                    <label for="send-message">Comments</label>
+                </div>
+
+                <button name="send-message" type="submit" class="btn btn-primary mt-3">Send</button>
+
+            </form>
+
+            <div class="col-12">
+                <hr>
             </div>
-
-            <button type="submit" class="btn btn-primary mt-3">Send</button>
-
-        </form>
-
-        <div class="col-12">
-            <hr>
-        </div>
+        <?php endif; ?>
 
     </div>
 
@@ -93,7 +95,8 @@
                     </div>
 
                     <div class="card-text">
-                        Some quick example text to build on the card title and make up the bulk of the card's content 2...
+                        Some quick example text to build on the card title and make up the bulk of the card's content
+                        2...
                     </div>
 
                     <div class="card-actions mt-2">

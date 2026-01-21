@@ -110,9 +110,21 @@ function get_messages(int $start, int $per_page): array
     if (!check_admin()) {
         $where = 'WHERE status = 1';
     }
-    $stmt = $db->prepare("SELECT m.id, m.user_id, m.message, m.status, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at, users.name FROM messages m JOIN users ON users.id = m.user_id {$where} LIMIT $start, $per_page");
+    $stmt = $db->prepare("SELECT m.id, m.user_id, m.message, m.status, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at, users.name FROM messages m JOIN users ON users.id = m.user_id {$where} ORDER BY id DESC LIMIT $start, $per_page");
     $stmt->execute();
     return $stmt->fetchAll();
+}
+
+function toggle_message_status(int $status, int $id): bool
+{
+    global $db;
+    if (!check_admin()) {
+        $_SESSION['errors'] = 'Forbidden';
+        return false;
+    }
+    $status = $status ? 1 : 0;
+    $stmt = $db->prepare("UPDATE messages SET status = ? WHERE id = ?");
+    return $stmt->execute([$status, $id]);
 }
 
 function get_count_messages(): int

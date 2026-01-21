@@ -103,6 +103,20 @@ function save_message(array $data): bool
     return true;
 }
 
+function edit_message(array $data): bool
+{
+    global $db;
+    if (!check_admin()) {
+        $_SESSION['errors'] = 'Forbidden';
+        return false;
+    }
+
+    $stmt = $db->prepare("UPDATE messages SET message = ? WHERE id = ?");
+    $stmt->execute([$data['message'], $data['id']]);
+    $_SESSION['success'] = 'Message was saved';
+    return true;
+}
+
 function get_messages(int $start, int $per_page): array
 {
     global $db;

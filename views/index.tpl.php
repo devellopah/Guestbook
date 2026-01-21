@@ -89,15 +89,17 @@
                                     </p>
 
                                     <div class="collapse" id="collapse-<?= $message['id'] ?>">
-                                        <form action="">
+                                        <form method="post">
                                             <div class="form-floating">
-                                    <textarea class="form-control" placeholder="Leave a comment here"
+                                    <textarea name="message" class="form-control" placeholder="Leave a comment here"
                                               id="text-<?= $message['id'] ?>"
-                                              style="height: 100px"><?= $message['message'] ?></textarea>
+                                              style="height: 200px"><?= $message['message'] ?></textarea>
                                                 <label for="text-<?= $message['id'] ?>">Comments</label>
                                             </div>
+                                            <input type="hidden" name="id" value="<?= $message['id'] ?>">
+                                            <input type="hidden" name="page" value="<?= $_GET['page'] ?? 1 ?>">
 
-                                            <button type="submit" class="btn btn-primary mt-3">Save</button>
+                                            <button name="edit-message" type="submit" class="btn btn-primary mt-3">Save</button>
                                         </form>
                                     </div>
                                 </div>

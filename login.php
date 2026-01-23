@@ -13,23 +13,26 @@ if (check_auth()) {
 $title = 'Login';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    $data = load(['email', 'password']);
-
-    $v = new \Valitron\Validator($data);
-    $v->rules([
-        'required' => ['email', 'password'],
-        'email' => ['email'],
-    ]);
-
-    if ($v->validate()) {
-        if (login($data)) {
-            redirect('index.php');
-        } else {
-            redirect('login.php');
-        }
+    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+        $_SESSION['errors'] = 'Security validation failed';
     } else {
-        $_SESSION['errors'] = get_errors($v->errors());
+        $data = load(['email', 'password']);
+
+        $v = new \Valitron\Validator($data);
+        $v->rules([
+            'required' => ['email', 'password'],
+            'email' => ['email'],
+        ]);
+
+        if ($v->validate()) {
+            if (login($data)) {
+                redirect('index.php');
+            } else {
+                redirect('login.php');
+            }
+        } else {
+            $_SESSION['errors'] = get_errors($v->errors());
+        }
     }
 }
 

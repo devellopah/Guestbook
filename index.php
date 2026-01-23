@@ -11,35 +11,43 @@ $title = 'Home';
 /** @var PDO $db */
 
 if (isset($_POST['send-message'])) {
-    $data = load(['message']);
-    $v = new \Valitron\Validator($data);
-    $v->rules([
-        'required' => ['message'],
-    ]);
-
-    if ($v->validate()) {
-        if (save_message($data)) {
-            redirect('index.php');
-        }
+    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+        $_SESSION['errors'] = 'Security validation failed';
     } else {
-        $_SESSION['errors'] = get_errors($v->errors());
+        $data = load(['message']);
+        $v = new \Valitron\Validator($data);
+        $v->rules([
+            'required' => ['message'],
+        ]);
+
+        if ($v->validate()) {
+            if (save_message($data)) {
+                redirect('index.php');
+            }
+        } else {
+            $_SESSION['errors'] = get_errors($v->errors());
+        }
     }
 }
 
 if (isset($_POST['edit-message'])) {
-    $data = load(['message', 'id', 'page']);
-    $v = new \Valitron\Validator($data);
-    $v->rules([
-        'required' => ['message', 'id'],
-        'integer' => ['id', 'page'],
-    ]);
-
-    if ($v->validate()) {
-        if (edit_message($data)) {
-            redirect("index.php?page={$data['page']}#message-{$data['id']}");
-        }
+    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+        $_SESSION['errors'] = 'Security validation failed';
     } else {
-        $_SESSION['errors'] = get_errors($v->errors());
+        $data = load(['message', 'id', 'page']);
+        $v = new \Valitron\Validator($data);
+        $v->rules([
+            'required' => ['message', 'id'],
+            'integer' => ['id', 'page'],
+        ]);
+
+        if ($v->validate()) {
+            if (edit_message($data)) {
+                redirect("index.php?page={$data['page']}#message-{$data['id']}");
+            }
+        } else {
+            $_SESSION['errors'] = get_errors($v->errors());
+        }
     }
 }
 

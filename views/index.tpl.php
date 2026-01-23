@@ -35,6 +35,7 @@
 
     <?php if (check_auth()): ?>
         <form method="post" class="mb-8">
+            <?php echo csrf_token_field(); ?>
             <div class="relative">
                 <textarea name="message" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Leave a comment here" id="send-message" rows="4"></textarea>
                 <label for="send-message" class="absolute -top-2 left-2 -mt-px inline-block px-1 bg-white text-xs font-medium text-gray-900">Comments</label>
@@ -79,6 +80,7 @@
 
                             <div id="edit-form-<?= $message['id'] ?>" class="hidden">
                                 <form method="post">
+                                    <?php echo csrf_token_field(); ?>
                                     <div class="relative mb-4">
                                         <textarea name="message" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Leave a comment here"
                                             id="text-<?= $message['id'] ?>" rows="6"><?= $message['message'] ?></textarea>

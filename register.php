@@ -15,28 +15,31 @@ $title = 'Register';
 /** @var PDO $db */
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    $data = load(['name', 'email', 'password']);
-
-    $v = new \Valitron\Validator($data);
-    $v->rules([
-        'required' => ['name', 'email', 'password'],
-        'email' => ['email'],
-        'lengthMin' => [
-            ['password', 6]
-        ],
-        'lengthMax' => [
-            ['name', 50],
-            ['email', 50],
-        ]
-    ]);
-
-    if ($v->validate()) {
-        if (register($data)) {
-            redirect('login.php');
-        }
+    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+        $_SESSION['errors'] = 'Security validation failed';
     } else {
-        $_SESSION['errors'] = get_errors($v->errors());
+        $data = load(['name', 'email', 'password']);
+
+        $v = new \Valitron\Validator($data);
+        $v->rules([
+            'required' => ['name', 'email', 'password'],
+            'email' => ['email'],
+            'lengthMin' => [
+                ['password', 6]
+            ],
+            'lengthMax' => [
+                ['name', 50],
+                ['email', 50],
+            ]
+        ]);
+
+        if ($v->validate()) {
+            if (register($data)) {
+                redirect('login.php');
+            }
+        } else {
+            $_SESSION['errors'] = get_errors($v->errors());
+        }
     }
 }
 

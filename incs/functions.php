@@ -182,3 +182,50 @@ function csrf_token_field(): string
     return '<!-- CSRF Token: ' . $token . ' -->' . "\n" .
         '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
 }
+
+function check_rate_limit(string $action, int $max_attempts = 5, int $time_window = 300): bool
+{
+    $key = "rate_limit_{$action}_" . session_id();
+
+    if (!isset($_SESSION[$key])) {
+        $_SESSION[$key] = [
+            'count' => 0,
+            'first_attempt' => time()
+        ];
+    }
+
+    $current_time = time();
+    $session = &$_SESSION[$key];
+
+    // Reset if time window has passed
+    if ($current_time - $session['first_attempt'] > $time_window) {
+        $session = [
+            'count' => 0,
+            'first_attempt' => $current_time
+        ];
+    }
+
+    // Check if limit exceeded
+    if ($session['count'] >= $max_attempts) {
+        return false;
+    }
+
+    // Increment counter
+    $session['count']++;
+    return true;
+}
+
+function get_rate_limit_remaining_time(string $action): int
+{
+    $key = "rate_limit_{$action}_" . session_id();
+
+    if (!isset($_SESSION[$key])) {
+        return 0;
+    }
+
+    $session = $_SESSION[$key];
+    $time_window = 300; // 5 minutes
+    $elapsed = time() - $session['first_attempt'];
+
+    return max(0, $time_window - $elapsed);
+}

@@ -13,7 +13,10 @@ if (check_auth()) {
 $title = 'Login';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+    if (!check_rate_limit('login_attempt', 5, 300)) {
+        $remaining_time = get_rate_limit_remaining_time('login_attempt');
+        $_SESSION['errors'] = "Too many login attempts. Please wait " . ceil($remaining_time / 60) . " minutes before trying again.";
+    } else if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
         $_SESSION['errors'] = 'Security validation failed';
     } else {
         $data = load(['email', 'password']);

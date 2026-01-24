@@ -15,7 +15,10 @@ $title = 'Register';
 /** @var PDO $db */
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+    if (!check_rate_limit('registration', 3, 600)) {
+        $remaining_time = get_rate_limit_remaining_time('registration');
+        $_SESSION['errors'] = "Too many registration attempts. Please wait " . ceil($remaining_time / 60) . " minutes before trying again.";
+    } else if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
         $_SESSION['errors'] = 'Security validation failed';
     } else {
         $data = load(['name', 'email', 'password']);

@@ -11,7 +11,10 @@ $title = 'Home';
 /** @var PDO $db */
 
 if (isset($_POST['send-message'])) {
-    if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
+    if (!check_rate_limit('message_post', 3, 60)) {
+        $remaining_time = get_rate_limit_remaining_time('message_post');
+        $_SESSION['errors'] = "Too many message submissions. Please wait " . ceil($remaining_time / 60) . " minutes before trying again.";
+    } else if (!validate_csrf_token($_POST['csrf_token'] ?? '')) {
         $_SESSION['errors'] = 'Security validation failed';
     } else {
         $data = load(['message']);

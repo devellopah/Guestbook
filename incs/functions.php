@@ -51,42 +51,66 @@ function get_errors(array $errors): string
 function register(array $data): bool
 {
     global $db;
-    $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
-    $stmt->execute([$data['email']]);
-    if ($stmt->fetchColumn()) {
-        $_SESSION['errors'] = 'This email is already taken';
+
+    try {
+        // Check if email already exists
+        $stmt = db_query("SELECT COUNT(*) FROM users WHERE email = ?", [$data['email']]);
+        if ($stmt->fetchColumn()) {
+            $_SESSION['errors'] = 'This email is already taken';
+            return false;
+        }
+
+        // Hash password and insert user
+        $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        $stmt = db_query("INSERT INTO users (name, email, password) VALUES (:name, :email, :password)", $data);
+
+        $_SESSION['success'] = 'You have successfully registered';
+        return true;
+    } catch (DatabaseException $e) {
+        log_error("Registration error: " . $e->getMessage(), ['email' => $data['email']]);
+        $_SESSION['errors'] = 'Unable to register. Please try again later.';
+        return false;
+    } catch (Exception $e) {
+        log_error("Registration failed: " . $e->getMessage(), $data);
+        $_SESSION['errors'] = 'An error occurred during registration.';
         return false;
     }
-
-    $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-    $stmt = $db->prepare("INSERT INTO users (name, email, password) VALUES (:name, :email, :password)");
-    $stmt->execute($data);
-    $_SESSION['success'] = 'You have successfully registered';
-    return true;
 }
 
 function login(array $data): bool
 {
     global $db;
-    $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$data['email']]);
-    if ($row = $stmt->fetch()) {
-        if (!password_verify($data['password'], $row['password'])) {
+
+    try {
+        // Check user credentials
+        $stmt = db_query("SELECT * FROM users WHERE email = ?", [$data['email']]);
+        if ($row = $stmt->fetch()) {
+            if (!password_verify($data['password'], $row['password'])) {
+                $_SESSION['errors'] = 'Wrong email or password';
+                return false;
+            }
+        } else {
             $_SESSION['errors'] = 'Wrong email or password';
             return false;
         }
-    } else {
-        $_SESSION['errors'] = 'Wrong email or password';
+
+        // Set session data
+        foreach ($row as $key => $value) {
+            if ($key != 'password') {
+                $_SESSION['user'][$key] = $value;
+            }
+        }
+        $_SESSION['success'] = 'Successfully login';
+        return true;
+    } catch (DatabaseException $e) {
+        log_error("Login error: " . $e->getMessage(), ['email' => $data['email']]);
+        $_SESSION['errors'] = 'Unable to login. Please try again later.';
+        return false;
+    } catch (Exception $e) {
+        log_error("Login failed: " . $e->getMessage(), ['email' => $data['email']]);
+        $_SESSION['errors'] = 'An error occurred during login.';
         return false;
     }
-
-    foreach ($row as $key => $value) {
-        if ($key != 'password') {
-            $_SESSION['user'][$key] = $value;
-        }
-    }
-    $_SESSION['success'] = 'Successfully login';
-    return true;
 }
 
 function save_message(array $data): bool
@@ -97,10 +121,21 @@ function save_message(array $data): bool
         return false;
     }
 
-    $stmt = $db->prepare("INSERT INTO messages (user_id, message) VALUES (?, ?)");
-    $stmt->execute([$_SESSION['user']['id'], $data['message']]);
-    $_SESSION['success'] = 'Message added';
-    return true;
+    try {
+        $stmt = db_query("INSERT INTO messages (user_id, message) VALUES (?, ?)", [
+            $_SESSION['user']['id'],
+            $data['message']
+        ]);
+        $_SESSION['success'] = 'Message added';
+        return true;
+    } catch (DatabaseException $e) {
+        $_SESSION['errors'] = 'Unable to save message. Please try again later.';
+        return false;
+    } catch (Exception $e) {
+        log_error("Message save error: " . $e->getMessage(), $data);
+        $_SESSION['errors'] = 'An error occurred while saving your message.';
+        return false;
+    }
 }
 
 function edit_message(array $data): bool
@@ -111,10 +146,21 @@ function edit_message(array $data): bool
         return false;
     }
 
-    $stmt = $db->prepare("UPDATE messages SET message = ? WHERE id = ?");
-    $stmt->execute([$data['message'], $data['id']]);
-    $_SESSION['success'] = 'Message was saved';
-    return true;
+    try {
+        $stmt = db_query("UPDATE messages SET message = ? WHERE id = ?", [
+            $data['message'],
+            $data['id']
+        ]);
+        $_SESSION['success'] = 'Message was saved';
+        return true;
+    } catch (DatabaseException $e) {
+        $_SESSION['errors'] = 'Unable to save message. Please try again later.';
+        return false;
+    } catch (Exception $e) {
+        log_error("Message edit error: " . $e->getMessage(), $data);
+        $_SESSION['errors'] = 'An error occurred while saving your message.';
+        return false;
+    }
 }
 
 function get_messages(int $start, int $per_page): array
@@ -124,9 +170,28 @@ function get_messages(int $start, int $per_page): array
     if (!check_admin()) {
         $where = 'WHERE status = 1';
     }
-    $stmt = $db->prepare("SELECT m.id, m.user_id, m.message, m.status, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at, users.name FROM messages m JOIN users ON users.id = m.user_id {$where} ORDER BY id DESC LIMIT $start, $per_page");
-    $stmt->execute();
-    return $stmt->fetchAll();
+
+    try {
+        $sql = "SELECT m.id, m.user_id, m.message, m.status, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at, users.name 
+                FROM messages m JOIN users ON users.id = m.user_id {$where} 
+                ORDER BY id DESC LIMIT :start, :per_page";
+
+        $stmt = db_query($sql, [
+            'start' => $start,
+            'per_page' => $per_page
+        ]);
+
+        return $stmt->fetchAll();
+    } catch (DatabaseException $e) {
+        log_error("Get messages error: " . $e->getMessage(), [
+            'start' => $start,
+            'per_page' => $per_page
+        ]);
+        return [];
+    } catch (Exception $e) {
+        log_error("Messages fetch error: " . $e->getMessage());
+        return [];
+    }
 }
 
 function toggle_message_status(int $status, int $id): bool
@@ -136,9 +201,26 @@ function toggle_message_status(int $status, int $id): bool
         $_SESSION['errors'] = 'Forbidden';
         return false;
     }
-    $status = $status ? 1 : 0;
-    $stmt = $db->prepare("UPDATE messages SET status = ? WHERE id = ?");
-    return $stmt->execute([$status, $id]);
+
+    try {
+        $status = $status ? 1 : 0;
+        $stmt = db_query("UPDATE messages SET status = ? WHERE id = ?", [
+            $status,
+            $id
+        ]);
+        return $stmt->rowCount() > 0;
+    } catch (DatabaseException $e) {
+        log_error("Toggle status error: " . $e->getMessage(), [
+            'status' => $status,
+            'id' => $id
+        ]);
+        $_SESSION['errors'] = 'Unable to update message status. Please try again later.';
+        return false;
+    } catch (Exception $e) {
+        log_error("Status toggle error: " . $e->getMessage());
+        $_SESSION['errors'] = 'An error occurred while updating message status.';
+        return false;
+    }
 }
 
 function get_count_messages(): int
@@ -148,8 +230,18 @@ function get_count_messages(): int
     if (!check_admin()) {
         $where = 'WHERE status = 1';
     }
-    $res = $db->query("SELECT COUNT(*) FROM messages {$where}");
-    return $res->fetchColumn();
+
+    try {
+        $sql = "SELECT COUNT(*) FROM messages {$where}";
+        $stmt = db_query($sql);
+        return $stmt->fetchColumn();
+    } catch (DatabaseException $e) {
+        log_error("Count messages error: " . $e->getMessage());
+        return 0;
+    } catch (Exception $e) {
+        log_error("Messages count error: " . $e->getMessage());
+        return 0;
+    }
 }
 
 function check_auth(): bool
@@ -228,4 +320,120 @@ function get_rate_limit_remaining_time(string $action): int
     $elapsed = time() - $session['first_attempt'];
 
     return max(0, $time_window - $elapsed);
+}
+
+// Custom Exception Classes
+class ValidationException extends Exception {}
+class DatabaseException extends Exception {}
+class SecurityException extends Exception {}
+
+// Enhanced Error Logging
+function log_error(string $message, array $context = []): void
+{
+    $log_entry = [
+        'timestamp' => date('Y-m-d H:i:s'),
+        'message' => $message,
+        'context' => $context,
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+        'session_id' => session_id()
+    ];
+    error_log(json_encode($log_entry));
+}
+
+// Safe File Require Function
+function safe_require(string $file_path): bool
+{
+    try {
+        if (!file_exists($file_path)) {
+            throw new Exception("Required file not found: {$file_path}");
+        }
+        require_once $file_path;
+        return true;
+    } catch (Exception $e) {
+        log_error("File error: " . $e->getMessage(), ['file_path' => $file_path]);
+        return false;
+    }
+}
+
+// Enhanced Input Validation
+function validate_input(string $input, string $field_name, int $max_length = 1000): string
+{
+    try {
+        $input = trim($input);
+
+        if (empty($input)) {
+            throw new ValidationException("{$field_name} cannot be empty");
+        }
+
+        if (strlen($input) > $max_length) {
+            throw new ValidationException("{$field_name} is too long (max {$max_length} characters)");
+        }
+
+        return $input;
+    } catch (ValidationException $e) {
+        throw $e;
+    } catch (Exception $e) {
+        throw new ValidationException("Invalid input for {$field_name}");
+    }
+}
+
+// Enhanced Database Query Function
+function db_query(string $sql, array $params = []): PDOStatement
+{
+    global $db;
+    try {
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
+    } catch (PDOException $e) {
+        log_error("Database error: " . $e->getMessage(), [
+            'sql' => $sql,
+            'params' => $params
+        ]);
+        throw new DatabaseException("Database service temporarily unavailable");
+    }
+}
+
+// Enhanced CSRF Validation with Exception Handling
+function validate_csrf_token_safe(string $token): bool
+{
+    try {
+        if (!validate_csrf_token($token)) {
+            throw new SecurityException("Invalid CSRF token");
+        }
+        return true;
+    } catch (SecurityException $e) {
+        log_error("Security violation: " . $e->getMessage(), [
+            'csrf_token' => substr($token, 0, 8) . '...',
+            'session_id' => session_id()
+        ]);
+        throw $e;
+    } catch (Exception $e) {
+        log_error("CSRF validation error: " . $e->getMessage());
+        throw new SecurityException("Security validation failed");
+    }
+}
+
+// Safe Session Data Access
+function safe_session_get(string $key, $default = null)
+{
+    try {
+        return $_SESSION[$key] ?? $default;
+    } catch (Exception $e) {
+        log_error("Session access error: " . $e->getMessage(), ['key' => $key]);
+        return $default;
+    }
+}
+
+// Enhanced Rate Limiting with Exception Handling
+function check_rate_limit_safe(string $action, int $max_attempts = 5, int $time_window = 300): bool
+{
+    try {
+        return check_rate_limit($action, $max_attempts, $time_window);
+    } catch (Exception $e) {
+        log_error("Rate limit check error: " . $e->getMessage(), ['action' => $action]);
+        // Fail open for rate limiting to not block legitimate users
+        return true;
+    }
 }

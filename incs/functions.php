@@ -341,20 +341,6 @@ function log_error(string $message, array $context = []): void
     error_log(json_encode($log_entry));
 }
 
-// Safe File Require Function
-function safe_require(string $file_path): bool
-{
-    try {
-        if (!file_exists($file_path)) {
-            throw new Exception("Required file not found: {$file_path}");
-        }
-        require_once $file_path;
-        return true;
-    } catch (Exception $e) {
-        log_error("File error: " . $e->getMessage(), ['file_path' => $file_path]);
-        return false;
-    }
-}
 
 // Enhanced Input Validation
 function validate_input(string $input, string $field_name, int $max_length = 1000): string

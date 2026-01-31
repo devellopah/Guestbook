@@ -17,18 +17,11 @@ header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
 
 // Safe file loading with exception handling
 try {
-    if (!safe_require(__DIR__ . '/vendor/autoload.php')) {
-        throw new Exception("Composer autoloader not found");
-    }
-    if (!safe_require(__DIR__ . '/incs/db.php')) {
-        throw new Exception("Database configuration not found");
-    }
-    if (!safe_require(__DIR__ . '/incs/functions.php')) {
-        throw new Exception("Core functions not found");
-    }
-    if (!safe_require(__DIR__ . '/incs/Pagination.php')) {
-        throw new Exception("Pagination class not found");
-    }
+    // Load files in dependency order using regular require_once
+    require_once __DIR__ . '/vendor/autoload.php';
+    require_once __DIR__ . '/incs/db.php';
+    require_once __DIR__ . '/incs/functions.php';
+    require_once __DIR__ . '/incs/Pagination.php';
 } catch (Exception $e) {
     log_error("Application startup error: " . $e->getMessage());
     die("Application cannot start due to configuration errors.");

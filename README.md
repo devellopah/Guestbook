@@ -118,7 +118,6 @@ Coverage report will be available at: http://localhost:8080/build/coverage/
 
 - PHP 8.2
 - MySQL 8.0
-- Bootstrap 5
 - Valitron (validation library)
 - PHPUnit (testing framework)
 - Docker & Docker Compose

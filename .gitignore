@@ -1,2 +1,42 @@
+# Dependencies
 vendor
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.cache-*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# PHPUnit
+.phpunit.result.cache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+temp/
+tmp/
+
+# Build
+build
+
+# Coverage
+build/coverage
+
+# Project specific
 improvements.txt

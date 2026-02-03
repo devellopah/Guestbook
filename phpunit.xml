@@ -18,8 +18,14 @@
     
     <coverage>
         <include>
+            <directory suffix=".php">src</directory>
             <directory suffix=".php">incs</directory>
         </include>
+        <exclude>
+            <directory>incs/css</directory>
+            <directory>incs/js</directory>
+            <directory>incs/vendor</directory>
+        </exclude>
         <report>
             <html outputDirectory="build/coverage"/>
             <text outputFile="build/coverage.txt"/>

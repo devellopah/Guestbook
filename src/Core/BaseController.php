@@ -49,6 +49,16 @@ abstract class BaseController
 
   protected function validateCsrfToken(): bool
   {
+    $submittedToken = $_POST['csrf_token'] ?? '';
+    $sessionToken = $_SESSION['csrf_token'] ?? '';
+
+    // Debug logging
+    error_log("CSRF Debug - Submitted token: " . substr($submittedToken, 0, 10) . "...");
+    error_log("CSRF Debug - Session token: " . substr($sessionToken, 0, 10) . "...");
+    error_log("CSRF Debug - Tokens equal: " . ($submittedToken === $sessionToken ? 'YES' : 'NO'));
+    error_log("CSRF Debug - Session token exists: " . (isset($_SESSION['csrf_token']) ? 'YES' : 'NO'));
+    error_log("CSRF Debug - POST token exists: " . (isset($_POST['csrf_token']) ? 'YES' : 'NO'));
+
     return isset($_POST['csrf_token']) && hash_equals(
       $_SESSION['csrf_token'] ?? '',
       $_POST['csrf_token']
@@ -70,7 +80,12 @@ abstract class BaseController
 
   protected function csrfTokenField(): string
   {
-    $token = $this->generateCsrfToken();
+    // Only generate token if it doesn't exist to prevent regeneration on page refresh
+    if (!isset($_SESSION['csrf_token'])) {
+      $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    $token = $_SESSION['csrf_token'];
+
     return '<!-- CSRF Token: ' . $token . ' -->' . "\n" .
       '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
   }

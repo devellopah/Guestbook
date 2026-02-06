@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 // Global Exception Handler
 set_exception_handler(function ($exception) {
   error_log("Uncaught exception: " . $exception->getMessage());

@@ -1,5 +1,10 @@
 <?php
 
+// Start session immediately to prevent header issues
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
 // Autoload classes from the src directory
 spl_autoload_register(function ($class) {
   // Convert namespace to file path

@@ -15,20 +15,19 @@ class UserController extends BaseController
     }
 
     $title = 'Login';
-    $errors = $this->getErrors();
-    $success = $this->getSuccess();
+    $flash = $this->getFlash();
 
     if ($this->isPost()) {
       if (!$this->checkRateLimit('login_attempt', 5, 300)) {
         $remainingTime = $this->getRateLimitRemainingTime('login_attempt');
-        $errors = "Too many login attempts. Please wait " . ceil($remainingTime / 60) . " minutes before trying again.";
-        $this->render('auth/login', compact('title', 'errors', 'success'));
+        $this->flash('error', "Too many login attempts. Please wait " . ceil($remainingTime / 60) . " minutes before trying again.");
+        $this->render('auth/login', compact('title', 'flash'));
         return;
       }
 
       if (!$this->validateCsrfToken()) {
-        $errors = 'Security validation failed';
-        $this->render('auth/login', compact('title', 'errors', 'success'));
+        $this->flash('error', 'Security validation failed');
+        $this->render('auth/login', compact('title', 'flash'));
         return;
       }
 
@@ -49,16 +48,16 @@ class UserController extends BaseController
           $this->flash('success', 'Successfully logged in');
           $this->redirect('index.php');
         } else {
-          $this->setErrors('Wrong email or password');
-          $this->render('auth/login', compact('title', 'errors', 'success', 'data'));
+          $this->flash('error', 'Wrong email or password');
+          $this->render('auth/login', compact('title', 'flash', 'data'));
         }
       } catch (Exception $e) {
         error_log("Login error: " . $e->getMessage());
         $this->flash('error', 'Unable to login. Please try again later.');
-        $this->render('auth/login', compact('title', 'errors', 'success'));
+        $this->render('auth/login', compact('title', 'flash'));
       }
     } else {
-      $this->render('auth/login', compact('title', 'errors', 'success'));
+      $this->render('auth/login', compact('title', 'flash'));
     }
   }
 
@@ -69,20 +68,19 @@ class UserController extends BaseController
     }
 
     $title = 'Register';
-    $errors = $this->getErrors();
-    $success = $this->getSuccess();
+    $flash = $this->getFlash();
 
     if ($this->isPost()) {
       if (!$this->checkRateLimit('registration', 3, 600)) {
         $remainingTime = $this->getRateLimitRemainingTime('registration');
-        $errors = "Too many registration attempts. Please wait " . ceil($remainingTime / 60) . " minutes before trying again.";
-        $this->render('auth/register', compact('title', 'errors', 'success'));
+        $this->flash('error', "Too many registration attempts. Please wait " . ceil($remainingTime / 60) . " minutes before trying again.");
+        $this->render('auth/register', compact('title', 'flash'));
         return;
       }
 
       if (!$this->validateCsrfToken()) {
-        $errors = 'Security validation failed';
-        $this->render('auth/register', compact('title', 'errors', 'success'));
+        $this->flash('error', 'Security validation failed');
+        $this->render('auth/register', compact('title', 'flash'));
         return;
       }
 
@@ -92,14 +90,14 @@ class UserController extends BaseController
         $user = new User($data);
         $user->save();
 
-        $success = 'You have successfully registered';
+        $this->flash('success', 'You have successfully registered');
         $this->redirect('login.php');
       } catch (Exception $e) {
-        $errors = $e->getMessage();
-        $this->render('auth/register', compact('title', 'errors', 'success', 'data'));
+        $this->flash('error', $e->getMessage());
+        $this->render('auth/register', compact('title', 'flash', 'data'));
       }
     } else {
-      $this->render('auth/register', compact('title', 'errors', 'success'));
+      $this->render('auth/register', compact('title', 'flash'));
     }
   }
 

@@ -14,8 +14,7 @@ class MessageController extends BaseController
   public function index(): void
   {
     $title = 'Home';
-    $errors = $this->getErrors();
-    $success = $this->getSuccess();
+    $flash = $this->getFlash();
 
     // Handle message posting
     if ($this->isPost() && isset($_POST['send-message'])) {
@@ -139,8 +138,7 @@ class MessageController extends BaseController
 
     $this->render('messages/index', compact(
       'title',
-      'errors',
-      'success',
+      'flash',
       'messages',
       'pagination',
       'user'

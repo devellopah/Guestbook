@@ -14,6 +14,12 @@ abstract class BaseController
     // Set default title
     $title = $title ?? 'Guestbook';
 
+    // Pass user data from session to view variables
+    $user = $this->getUser();
+
+    // Pass flash messages from session to view variables
+    $flash = $this->getFlash();
+
     // Include the base layout
     require_once __DIR__ . '/../Views/layouts/base.php';
   }
@@ -113,35 +119,11 @@ abstract class BaseController
     ];
   }
 
-  protected function setErrors(string $errors): void
-  {
-    $_SESSION['errors'] = $errors;
-  }
-
-  protected function setSuccess(string $success): void
-  {
-    $_SESSION['success'] = $success;
-  }
-
   protected function getFlash(): ?array
   {
     $flash = $_SESSION['flash'] ?? null;
     unset($_SESSION['flash']);
     return $flash;
-  }
-
-  protected function getErrors(): ?string
-  {
-    $errors = $_SESSION['errors'] ?? null;
-    unset($_SESSION['errors']);
-    return $errors;
-  }
-
-  protected function getSuccess(): ?string
-  {
-    $success = $_SESSION['success'] ?? null;
-    unset($_SESSION['success']);
-    return $success;
   }
 
   protected function checkRateLimit(string $action, int $maxAttempts = 5, int $timeWindow = 300): bool

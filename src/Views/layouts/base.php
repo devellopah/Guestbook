@@ -47,7 +47,7 @@ header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
             <i class="fas fa-home"></i>
             <span>Home</span>
           </a>
-          <?php if (!isset($_SESSION['user'])): ?>
+          <?php if (!$user): ?>
             <a href="register.php" class="text-white hover:text-gray-200 transition-colors flex items-center space-x-1">
               <i class="fas fa-user-plus"></i>
               <span>Register</span>
@@ -56,13 +56,12 @@ header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
               <i class="fas fa-sign-in-alt"></i>
               <span>Login</span>
             </a>
-          <?php endif; ?>
-          <?php if (isset($_SESSION['user'])): ?>
+          <?php else: ?>
             <div class="relative group">
               <button class="flex items-center space-x-2 text-white hover:text-gray-200 transition-colors">
                 <i class="fas fa-user"></i>
-                <span><?= htmlspecialchars($_SESSION['user']['name']) ?></span>
-                <?php if ($_SESSION['user']['role'] == 2): ?>
+                <span><?= htmlspecialchars($user['name']) ?></span>
+                <?php if ($user['role'] == 2): ?>
                   <span class="bg-yellow-500 text-xs px-2 py-1 rounded-full">Admin</span>
                 <?php endif; ?>
                 <i class="fas fa-chevron-down ml-1 text-sm"></i>
@@ -83,27 +82,10 @@ header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <?php
     // Display flash messages
-    if (isset($_SESSION['flash'])): ?>
-      <div class="bg-<?= $_SESSION['flash']['type'] === 'success' ? 'green' : 'red' ?>-100 border border-<?= $_SESSION['flash']['type'] === 'success' ? 'green' : 'red' ?>-400 text-<?= $_SESSION['flash']['type'] === 'success' ? 'green' : 'red' ?>-700 px-4 py-3 rounded mb-4" role="alert">
-        <span class="block sm:inline"><?= htmlspecialchars($_SESSION['flash']['message']) ?></span>
+    if (isset($flash)): ?>
+      <div class="bg-<?= $flash['type'] === 'success' ? 'green' : ($flash['type'] === 'error' ? 'red' : 'blue') ?>-100 border border-<?= $flash['type'] === 'success' ? 'green' : ($flash['type'] === 'error' ? 'red' : 'blue') ?>-400 text-<?= $flash['type'] === 'success' ? 'green' : ($flash['type'] === 'error' ? 'red' : 'blue') ?>-700 px-4 py-3 rounded mb-4" role="alert">
+        <span class="block sm:inline"><?= htmlspecialchars($flash['message']) ?></span>
       </div>
-      <?php unset($_SESSION['flash']); ?>
-    <?php endif; ?>
-
-    <?php
-    // Display session messages
-    if (isset($_SESSION['success'])): ?>
-      <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
-        <span class="block sm:inline"><?= htmlspecialchars($_SESSION['success']) ?></span>
-      </div>
-      <?php unset($_SESSION['success']); ?>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['errors'])): ?>
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
-        <span class="block sm:inline"><?= $_SESSION['errors'] ?></span>
-      </div>
-      <?php unset($_SESSION['errors']); ?>
     <?php endif; ?>
 
     <!-- Render the specific view -->

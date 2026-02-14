@@ -31,7 +31,7 @@
               <i class="fas fa-envelope text-gray-400"></i>
             </div>
             <input type="email" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              id="email" name="email" value="<?= $this->old('email') ?>" placeholder="Enter your email" required>
+              id="email" name="email" value="<?= $this->old('email') ?>" placeholder="Enter your email">
           </div>
         </div>
 
@@ -42,7 +42,7 @@
               <i class="fas fa-lock text-gray-400"></i>
             </div>
             <input type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              id="password" name="password" placeholder="Enter your password" required>
+              id="password" name="password" placeholder="Enter your password">
           </div>
         </div>
 

@@ -7,7 +7,7 @@
         </h2>
       </div>
       <div class="p-6">
-        <?php if (isset($_SESSION['user'])): ?>
+        <?php if ($user): ?>
           <form method="POST" action="index.php" class="mb-6">
             <?= $this->csrfTokenField() ?>
             <input type="hidden" name="send-message" value="1">
@@ -15,7 +15,7 @@
             <div class="mb-4">
               <label for="message" class="block text-gray-700 font-medium mb-2">Share your thoughts</label>
               <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                id="message" name="message" rows="4" placeholder="Write your message here..." required></textarea>
+                id="message" name="message" rows="4" placeholder="Write your message here..."></textarea>
             </div>
 
             <div class="flex justify-between items-center">
@@ -66,8 +66,8 @@
                       </span>
                     <?php endif; ?>
 
-                    <?php if (isset($_SESSION['user'])): ?>
-                      <?php if ($_SESSION['user']['id'] == $message->getUserId() || $this->checkAdmin()): ?>
+                    <?php if ($user): ?>
+                      <?php if ($user['id'] == $message->getUserId() || $this->checkAdmin()): ?>
                         <button class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200 transition-colors edit-btn"
                           data-message-id="<?= $message->getId() ?>"
                           data-message-text="<?= htmlspecialchars($message->getMessage()) ?>"
@@ -127,7 +127,7 @@
         <div class="mb-4">
           <label for="edit-message-text" class="block text-gray-700 font-medium mb-2">Message</label>
           <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            id="edit-message-text" name="message" rows="4" required></textarea>
+            id="edit-message-text" name="message" rows="4"></textarea>
         </div>
 
         <div class="flex justify-end space-x-3">

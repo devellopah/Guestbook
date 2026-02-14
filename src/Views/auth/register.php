@@ -25,7 +25,7 @@
               <i class="fas fa-user text-gray-400"></i>
             </div>
             <input type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              id="name" name="name" value="<?= $this->old('name') ?>" placeholder="Enter your full name" required>
+              id="name" name="name" value="<?= $this->old('name') ?>" placeholder="Enter your full name">
           </div>
         </div>
 
@@ -36,7 +36,7 @@
               <i class="fas fa-envelope text-gray-400"></i>
             </div>
             <input type="email" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              id="email" name="email" value="<?= $this->old('email') ?>" placeholder="Enter your email" required>
+              id="email" name="email" value="<?= $this->old('email') ?>" placeholder="Enter your email">
           </div>
         </div>
 
@@ -47,7 +47,7 @@
               <i class="fas fa-lock text-gray-400"></i>
             </div>
             <input type="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              id="password" name="password" placeholder="Create a strong password" required>
+              id="password" name="password" placeholder="Create a strong password">
           </div>
           <p class="mt-1 text-sm text-gray-500">Password must be at least 6 characters long</p>
         </div>

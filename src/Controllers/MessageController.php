@@ -4,10 +4,9 @@ namespace Controllers;
 
 use Core\BaseController;
 use Models\Message;
+use Models\Pagination;
 use Exception;
 
-// Include the Pagination class manually since it's in the legacy incs/ directory
-require_once __DIR__ . '/../../incs/Pagination.php';
 
 class MessageController extends BaseController
 {
@@ -127,7 +126,7 @@ class MessageController extends BaseController
     $page = (int) ($_GET['page'] ?? 1);
     $perPage = 4;
     $total = Message::getCount(!$this->checkAdmin());
-    $pagination = new \Pagination($page, $perPage, $total);
+    $pagination = new Pagination($page, $perPage, $total);
     $start = $pagination->getStart();
 
     // Get messages

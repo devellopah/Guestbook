@@ -24,11 +24,10 @@ class UserTest extends BaseTestCase
       'password' => 'password123'
     ];
 
-    // Load functions
-    require_once __DIR__ . '/../../incs/functions.php';
-
-    // Call register function
-    $result = register($testData);
+    // Use the new MVC structure - create user directly
+    $user = new \Models\User($testData);
+    $user->save();
+    $result = true; // If no exception was thrown, registration succeeded
 
     // Assertions
     $this->assertTrue($result, 'Registration should succeed');
@@ -67,14 +66,17 @@ class UserTest extends BaseTestCase
       'password' => 'password123'
     ];
 
-    // Load functions
-    require_once __DIR__ . '/../../incs/functions.php';
-
-    // Call register function
-    $result = register($testData);
+    // Use the new MVC structure - try to create user and expect exception for duplicate email
+    try {
+      $user = new \Models\User($testData);
+      $user->save();
+      $result = false; // Should not reach here
+    } catch (\Exception $e) {
+      $result = true; // Expected exception for duplicate email
+    }
 
     // Assertions
-    $this->assertFalse($result, 'Registration should fail with existing email');
+    $this->assertTrue($result, 'Registration should fail with existing email');
 
     // Check if only one user exists with that email
     $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
@@ -92,9 +94,6 @@ class UserTest extends BaseTestCase
       'email' => 'invalid-email',
       'password' => 'password123'
     ];
-
-    // Load functions
-    require_once __DIR__ . '/../../incs/functions.php';
 
     // Test validation using Valitron (same as in register.php)
     $v = new Validator($testData);
@@ -124,9 +123,6 @@ class UserTest extends BaseTestCase
       'password' => '123' // Too short
     ];
 
-    // Load functions
-    require_once __DIR__ . '/../../incs/functions.php';
-
     // Test validation using Valitron (same as in register.php)
     $v = new Validator($testData);
     $v->rules([
@@ -154,9 +150,6 @@ class UserTest extends BaseTestCase
       'email' => '',
       'password' => ''
     ];
-
-    // Load functions
-    require_once __DIR__ . '/../../incs/functions.php';
 
     // Test validation using Valitron (same as in register.php)
     $v = new Validator($testData);
@@ -187,9 +180,6 @@ class UserTest extends BaseTestCase
       'email' => 'john@example.com',
       'password' => 'password123'
     ];
-
-    // Load functions
-    require_once __DIR__ . '/../../incs/functions.php';
 
     // Test validation using Valitron (same as in register.php)
     $v = new Validator($testData);

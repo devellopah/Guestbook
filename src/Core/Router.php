@@ -10,6 +10,15 @@ class Router
   public function __construct()
   {
     $this->basePath = dirname($_SERVER['SCRIPT_NAME']);
+
+    // Define routes
+    $this->get('', 'MessageController', 'index');
+    $this->get('index.php', 'MessageController', 'index');
+    $this->get('login.php', 'UserController', 'login');
+    $this->get('register.php', 'UserController', 'register');
+    $this->post('login.php', 'UserController', 'login');
+    $this->post('register.php', 'UserController', 'register');
+    $this->get('index.php?controller=User&action=logout', 'UserController', 'logout');
   }
 
   public function get(string $path, string $controller, string $method): self
@@ -39,6 +48,19 @@ class Router
     if ($uri === '' && isset($this->routes[$method]['/'])) {
       $this->callAction($this->routes[$method]['/']);
       return;
+    }
+
+    // Check for query string controller/action (e.g., index.php?controller=User&action=logout)
+    $controller = $_GET['controller'] ?? '';
+    $action = $_GET['action'] ?? '';
+
+    if ($controller && $action) {
+      $controllerClass = 'Controllers\\' . $controller . 'Controller';
+      if (class_exists($controllerClass) && method_exists($controllerClass, $action)) {
+        $controller = new $controllerClass();
+        $controller->$action();
+        return;
+      }
     }
 
     // Fallback to index.php routes for backward compatibility

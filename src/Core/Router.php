@@ -11,14 +11,14 @@ class Router
   {
     $this->basePath = dirname($_SERVER['SCRIPT_NAME']);
 
-    // Define routes
+    // Define modern MVC routes
     $this->get('', 'MessageController', 'index');
-    $this->get('index.php', 'MessageController', 'index');
-    $this->get('login.php', 'UserController', 'login');
-    $this->get('register.php', 'UserController', 'register');
-    $this->post('login.php', 'UserController', 'login');
-    $this->post('register.php', 'UserController', 'register');
-    $this->get('index.php?controller=User&action=logout', 'UserController', 'logout');
+    $this->get('messages', 'MessageController', 'index');
+    $this->get('login', 'UserController', 'login');
+    $this->get('register', 'UserController', 'register');
+    $this->post('login', 'UserController', 'login');
+    $this->post('register', 'UserController', 'register');
+    $this->get('logout', 'UserController', 'logout');
   }
 
   public function get(string $path, string $controller, string $method): self
@@ -44,27 +44,16 @@ class Router
       return;
     }
 
-    // Try root path
-    if ($uri === '' && isset($this->routes[$method]['/'])) {
-      $this->callAction($this->routes[$method]['/']);
+    // Try root path (empty URI should match empty route)
+    if ($uri === '' && isset($this->routes[$method][''])) {
+      $this->callAction($this->routes[$method]['']);
       return;
     }
 
-    // Check for query string controller/action (e.g., index.php?controller=User&action=logout)
-    $controller = $_GET['controller'] ?? '';
-    $action = $_GET['action'] ?? '';
-
-    if ($controller && $action) {
-      $controllerClass = 'Controllers\\' . $controller . 'Controller';
-      if (class_exists($controllerClass) && method_exists($controllerClass, $action)) {
-        $controller = new $controllerClass();
-        $controller->$action();
-        return;
-      }
-    }
-
-    // Fallback to index.php routes for backward compatibility
-    $this->handleLegacyRoutes();
+    // No legacy routing support - only modern MVC routes
+    http_response_code(404);
+    echo "Page not found";
+    return;
   }
 
   private function normalizePath(string $path): string
@@ -82,9 +71,12 @@ class Router
     }
 
     // Remove base path
-    if ($this->basePath && strpos($requestUri, $this->basePath) === 0) {
+    if ($this->basePath && $this->basePath !== '/' && strpos($requestUri, $this->basePath) === 0) {
       $requestUri = substr($requestUri, strlen($this->basePath));
     }
+
+    // Remove .php extension for modern routing
+    $requestUri = str_replace('.php', '', $requestUri);
 
     return $this->normalizePath($requestUri);
   }
@@ -105,29 +97,5 @@ class Router
     }
 
     $controller->$method();
-  }
-
-  private function handleLegacyRoutes(): void
-  {
-    $scriptName = basename($_SERVER['SCRIPT_NAME'] ?? '');
-
-    switch ($scriptName) {
-      case 'index.php':
-        $controller = new \Controllers\MessageController();
-        $controller->index();
-        break;
-      case 'login.php':
-        $controller = new \Controllers\UserController();
-        $controller->login();
-        break;
-      case 'register.php':
-        $controller = new \Controllers\UserController();
-        $controller->register();
-        break;
-      default:
-        http_response_code(404);
-        echo "Page not found";
-        break;
-    }
   }
 }

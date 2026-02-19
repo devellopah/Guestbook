@@ -8,7 +8,7 @@
       </div>
       <div class="p-6">
         <?php if ($user): ?>
-          <form method="POST" action="index.php" class="mb-6">
+          <form method="POST" action="/" class="mb-6">
             <?= $this->csrfTokenField() ?>
             <input type="hidden" name="send-message" value="1">
 
@@ -28,8 +28,8 @@
         <?php else: ?>
           <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-6">
             <i class="fas fa-info-circle mr-2"></i>
-            Please <a href="login.php" class="font-medium text-blue-600 hover:text-blue-800">login</a> or
-            <a href="register.php" class="font-medium text-blue-600 hover:text-blue-800">register</a> to post a message.
+            Please <a href="/login" class="font-medium text-blue-600 hover:text-blue-800">login</a> or
+            <a href="/register" class="font-medium text-blue-600 hover:text-blue-800">register</a> to post a message.
           </div>
         <?php endif; ?>
 
@@ -78,7 +78,7 @@
                       <?php endif; ?>
 
                       <?php if ($this->checkAdmin()): ?>
-                        <a href="index.php?do=toggle-status&id=<?= $message->getId() ?>&status=<?= $message->getStatus() ?>&page=<?= $page ?? 1 ?>"
+                        <a href="/?do=toggle-status&id=<?= $message->getId() ?>&status=<?= $message->getStatus() ?>&page=<?= $page ?? 1 ?>"
                           class="bg-<?= $message->getStatus() ? 'red' : 'green' ?>-100 text-<?= $message->getStatus() ? 'red' : 'green' ?>-700 px-3 py-1 rounded-md hover:bg-<?= $message->getStatus() ? 'red' : 'green' ?>-200 transition-colors"
                           onclick="return confirm('Are you sure you want to <?= $message->getStatus() ? 'hide' : 'show' ?> this message?')">
                           <i class="fas fa-<?= $message->getStatus() ? 'eye-slash' : 'eye' ?>"></i>
@@ -118,7 +118,7 @@
         </button>
       </div>
 
-      <form method="POST" action="index.php">
+      <form method="POST" action="/">
         <?= $this->csrfTokenField() ?>
         <input type="hidden" name="edit-message" value="1">
         <input type="hidden" name="id" id="edit-message-id">

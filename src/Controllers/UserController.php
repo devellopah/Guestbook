@@ -11,7 +11,7 @@ class UserController extends BaseController
   public function login(): void
   {
     if ($this->checkAuth()) {
-      $this->redirect('index.php');
+      $this->redirect('/');
     }
 
     $title = 'Login';
@@ -46,7 +46,7 @@ class UserController extends BaseController
           ];
 
           $this->flash('success', 'Successfully logged in');
-          $this->redirect('index.php');
+          $this->redirect('/');
         } else {
           $this->flash('error', 'Wrong email or password');
           $this->render('auth/login', compact('title', 'flash', 'data'));
@@ -64,7 +64,7 @@ class UserController extends BaseController
   public function register(): void
   {
     if ($this->checkAuth()) {
-      $this->redirect('index.php');
+      $this->redirect('/');
     }
 
     $title = 'Register';
@@ -91,7 +91,7 @@ class UserController extends BaseController
         $user->save();
 
         $this->flash('success', 'You have successfully registered');
-        $this->redirect('login.php');
+        $this->redirect('/login');
       } catch (Exception $e) {
         $this->flash('error', $e->getMessage());
         $this->render('auth/register', compact('title', 'flash', 'data'));
@@ -127,6 +127,6 @@ class UserController extends BaseController
     session_id('');
 
     $this->flash('success', 'You have been logged out');
-    $this->redirect('index.php');
+    $this->redirect('/');
   }
 }

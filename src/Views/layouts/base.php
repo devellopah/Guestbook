@@ -37,22 +37,22 @@ header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <div class="flex items-center">
-          <a href="index.php" class="flex items-center space-x-2 text-white font-bold text-xl">
+          <a href="/" class="flex items-center space-x-2 text-white font-bold text-xl">
             <i class="fas fa-book"></i>
             <span>Guestbook</span>
           </a>
         </div>
         <div class="hidden md:flex items-center space-x-4">
-          <a href="index.php" class="text-white hover:text-gray-200 transition-colors flex items-center space-x-1">
+          <a href="/" class="text-white hover:text-gray-200 transition-colors flex items-center space-x-1">
             <i class="fas fa-home"></i>
             <span>Home</span>
           </a>
           <?php if (!$user): ?>
-            <a href="register.php" class="text-white hover:text-gray-200 transition-colors flex items-center space-x-1">
+            <a href="/register" class="text-white hover:text-gray-200 transition-colors flex items-center space-x-1">
               <i class="fas fa-user-plus"></i>
               <span>Register</span>
             </a>
-            <a href="login.php" class="text-white hover:text-gray-200 transition-colors flex items-center space-x-1">
+            <a href="/login" class="text-white hover:text-gray-200 transition-colors flex items-center space-x-1">
               <i class="fas fa-sign-in-alt"></i>
               <span>Login</span>
             </a>
@@ -67,7 +67,7 @@ header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
                 <i class="fas fa-chevron-down ml-1 text-sm"></i>
               </button>
               <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <a href="index.php?controller=User&action=logout" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 flex items-center space-x-2">
+                <a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 flex items-center space-x-2">
                   <i class="fas fa-sign-out-alt"></i>
                   <span>Logout</span>
                 </a>

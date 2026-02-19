@@ -19,20 +19,20 @@ class MessageController extends BaseController
     if ($this->isPost() && isset($_POST['send-message'])) {
       if (!$this->checkAuth()) {
         $this->flash('error', 'Login is required');
-        $this->redirect('login.php');
+        $this->redirect('/login');
         return;
       }
 
       if (!$this->checkRateLimit('message_post', 3, 60)) {
         $remainingTime = $this->getRateLimitRemainingTime('message_post');
         $this->flash('error', "Too many message submissions. Please wait " . ceil($remainingTime / 60) . " minutes before trying again.");
-        $this->redirect('index.php');
+        $this->redirect('/');
         return;
       }
 
       if (!$this->validateCsrfToken()) {
         $this->flash('error', 'Security validation failed');
-        $this->redirect('index.php');
+        $this->redirect('/');
         return;
       }
 
@@ -46,10 +46,10 @@ class MessageController extends BaseController
         $message->save();
 
         $this->flash('success', 'Message added');
-        $this->redirect('index.php');
+        $this->redirect('/');
       } catch (Exception $e) {
         $this->flash('error', $e->getMessage());
-        $this->redirect('index.php');
+        $this->redirect('/');
       }
     }
 
@@ -57,13 +57,13 @@ class MessageController extends BaseController
     if ($this->isPost() && isset($_POST['edit-message'])) {
       if (!$this->checkAuth()) {
         $this->flash('error', 'Login is required');
-        $this->redirect('login.php');
+        $this->redirect('/login');
         return;
       }
 
       if (!$this->validateCsrfToken()) {
         $this->flash('error', 'Security validation failed');
-        $this->redirect('index.php');
+        $this->redirect('/');
         return;
       }
 
@@ -74,7 +74,7 @@ class MessageController extends BaseController
 
         if (!$message) {
           $this->flash('error', 'Message not found');
-          $this->redirect("index.php?page={$data['page']}");
+          $this->redirect("/?page={$data['page']}");
           return;
         }
 
@@ -82,7 +82,7 @@ class MessageController extends BaseController
         $user = $this->getUser();
         if ($user['id'] !== $message->getUserId() && !$this->checkAdmin()) {
           $this->flash('error', 'You can only edit your own messages');
-          $this->redirect("index.php?page={$data['page']}");
+          $this->redirect("/?page={$data['page']}");
           return;
         }
 
@@ -90,10 +90,10 @@ class MessageController extends BaseController
         $message->save();
 
         $this->flash('success', 'Message was saved');
-        $this->redirect("index.php?page={$data['page']}#message-{$data['id']}");
+        $this->redirect("/?page={$data['page']}#message-{$data['id']}");
       } catch (Exception $e) {
         $this->flash('error', $e->getMessage());
-        $this->redirect("index.php?page={$data['page']}");
+        $this->redirect("/?page={$data['page']}");
       }
     }
 
@@ -101,7 +101,7 @@ class MessageController extends BaseController
     if (isset($_GET['do']) && $_GET['do'] == 'toggle-status') {
       if (!$this->checkAdmin()) {
         $this->flash('error', 'Forbidden');
-        $this->redirect('index.php');
+        $this->redirect('/');
         return;
       }
 
@@ -119,7 +119,7 @@ class MessageController extends BaseController
         error_log("Toggle status error: " . $e->getMessage());
       }
 
-      $this->redirect("index.php?page={$page}#message-{$id}");
+      $this->redirect("/?page={$page}#message-{$id}");
     }
 
     // Get pagination data

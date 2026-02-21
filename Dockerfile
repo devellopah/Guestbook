@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql
 
+# Enable Apache mod_rewrite for clean URLs
+RUN a2enmod rewrite
+
 # Install Xdebug for code coverage
 RUN pecl install xdebug \
   && docker-php-ext-enable xdebug

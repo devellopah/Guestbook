@@ -9,10 +9,9 @@ class Router
 
   public function __construct()
   {
-    $this->basePath = dirname($_SERVER['SCRIPT_NAME']);
-
-    // Define modern MVC routes
+    // Define all application routes
     $this->get('', 'MessageController', 'index');
+    $this->get('/', 'MessageController', 'index');
     $this->get('messages', 'MessageController', 'index');
     $this->get('login', 'UserController', 'login');
     $this->get('register', 'UserController', 'register');
@@ -63,22 +62,20 @@ class Router
 
   private function getCurrentUri(): string
   {
-    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 
     // Remove query string
-    if (strpos($requestUri, '?') !== false) {
-      $requestUri = explode('?', $requestUri)[0];
-    }
-
-    // Remove base path
-    if ($this->basePath && $this->basePath !== '/' && strpos($requestUri, $this->basePath) === 0) {
-      $requestUri = substr($requestUri, strlen($this->basePath));
+    if (($pos = strpos($requestUri, '?')) !== false) {
+      $requestUri = substr($requestUri, 0, $pos);
     }
 
     // Remove .php extension for modern routing
     $requestUri = str_replace('.php', '', $requestUri);
 
-    return $this->normalizePath($requestUri);
+    // Normalize the path
+    $path = trim($requestUri, '/');
+
+    return $path;
   }
 
   private function callAction(array $route): void

@@ -12,6 +12,7 @@ class Router
     // Define all application routes
     $this->get('', 'MessageController', 'index');
     $this->get('/', 'MessageController', 'index');
+    $this->post('/', 'MessageController', 'index');
     $this->get('messages', 'MessageController', 'index');
     $this->get('login', 'UserController', 'login');
     $this->get('register', 'UserController', 'register');

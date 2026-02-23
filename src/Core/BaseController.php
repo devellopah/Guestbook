@@ -14,11 +14,11 @@ abstract class BaseController
     // Set default title
     $title = $title ?? 'Guestbook';
 
-    // Pass user data from session to view variables
-    $user = $this->getUser();
+    // Pass user data from session to view variables (only if not already set)
+    $user = $user ?? $this->getUser();
 
-    // Pass flash messages from session to view variables
-    $flash = $this->getFlash();
+    // Pass flash messages from session to view variables (only if not already set)
+    $flash = $flash ?? $this->getFlash();
 
     // Include the base layout
     require_once __DIR__ . '/../Views/layouts/base.php';

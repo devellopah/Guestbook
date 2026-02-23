@@ -38,6 +38,12 @@ class MessageController extends BaseController
 
       $data = $this->getPostData(['message']);
 
+      if (empty($data['message'])) {
+        $this->flash('error', 'Message is required');
+        $this->redirect('/');
+        return;
+      }
+
       try {
         $message = new Message([
           'user_id' => $this->getUser()['id'],

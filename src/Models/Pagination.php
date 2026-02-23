@@ -69,35 +69,41 @@ class Pagination
     $pages_left = '';
     $pages_right = '';
 
+    // Tailwind CSS classes for pagination
+    $baseClasses = "relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors";
+    $activeClasses = "relative inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 border border-blue-600";
+    $edgeClasses = "relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors rounded-l-md";
+    $edgeRightClasses = "relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors rounded-r-md";
+
     if ($this->current_page > 1) {
-      $back = "<li class='page-item'><a href='" . $this->getLink($this->current_page - 1) . "' class='page-link'><</a></li>";
+      $back = "<li><a href='" . $this->getLink($this->current_page - 1) . "' class='{$baseClasses}'><i class='fas fa-chevron-left'></i></a></li>";
     }
 
     if ($this->current_page < $this->count_pages) {
-      $forward = "<li class='page-item'><a class='page-link' href='" . $this->getLink($this->current_page + 1) . "'>></a></li>";
+      $forward = "<li><a class='{$baseClasses}' href='" . $this->getLink($this->current_page + 1) . "'><i class='fas fa-chevron-right'></i></a></li>";
     }
 
     if ($this->current_page > $this->mid_size + 1) {
-      $start_page = "<li class='page-item'><a class='page-link' href='" . $this->getLink(1) . "'>&laquo;</a></li>";
+      $start_page = "<li><a class='{$edgeClasses}' href='" . $this->getLink(1) . "'><i class='fas fa-angle-double-left'></i></a></li>";
     }
 
     if ($this->current_page < ($this->count_pages - $this->mid_size)) {
-      $end_page = "<li class='page-item'><a class='page-link' href='" . $this->getLink($this->count_pages) . "'>&raquo;</a></li>";
+      $end_page = "<li><a class='{$edgeRightClasses}' href='" . $this->getLink($this->count_pages) . "'><i class='fas fa-angle-double-right'></i></a></li>";
     }
 
     for ($i = $this->mid_size; $i > 0; $i--) {
       if ($this->current_page - $i > 0) {
-        $pages_left .= "<li class='page-item'><a class='page-link' href='" . $this->getLink($this->current_page - $i) . "'>" . ($this->current_page - $i) . "</a></li>";
+        $pages_left .= "<li><a class='{$baseClasses}' href='" . $this->getLink($this->current_page - $i) . "'>" . ($this->current_page - $i) . "</a></li>";
       }
     }
 
     for ($i = 1; $i <= $this->mid_size; $i++) {
       if ($this->current_page + $i <= $this->count_pages) {
-        $pages_right .= "<li class='page-item'><a class='page-link' href='" . $this->getLink($this->current_page + $i) . "'>" . ($this->current_page + $i) . "</a></li>";
+        $pages_right .= "<li><a class='{$baseClasses}' href='" . $this->getLink($this->current_page + $i) . "'>" . ($this->current_page + $i) . "</a></li>";
       }
     }
 
-    return '<nav aria-label="Page navigation example"><ul class="pagination">' . $start_page . $back . $pages_left . '<li class="page-item active"><a class="page-link">' . $this->current_page . '</a></li>' . $pages_right . $forward . $end_page . '</ul></nav>';
+    return '<nav aria-label="Messages pagination"><ul class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">' . $start_page . $back . $pages_left . '<li><span class="' . $activeClasses . '">' . $this->current_page . '</span></li>' . $pages_right . $forward . $end_page . '</ul></nav>';
   }
 
   private function getLink($page): string

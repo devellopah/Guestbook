@@ -78,7 +78,7 @@
                       <?php endif; ?>
 
                       <?php if ($this->checkAdmin()): ?>
-                        <a href="/?do=toggle-status&id=<?= $message->getId() ?>&status=<?= $message->getStatus() ?>&page=<?= $page ?? 1 ?>"
+                        <a href="/?do=toggle-status&id=<?= $message->getId() ?>&status=<?= $message->getStatus() ?>&page=<?= $pagination->current_page ?? 1 ?>"
                           class="bg-<?= $message->getStatus() ? 'red' : 'green' ?>-100 text-<?= $message->getStatus() ? 'red' : 'green' ?>-700 px-3 py-1 rounded-md hover:bg-<?= $message->getStatus() ? 'red' : 'green' ?>-200 transition-colors"
                           onclick="return confirm('Are you sure you want to <?= $message->getStatus() ? 'hide' : 'show' ?> this message?')">
                           <i class="fas fa-<?= $message->getStatus() ? 'eye-slash' : 'eye' ?>"></i>
@@ -122,7 +122,7 @@
         <?= $this->csrfTokenField() ?>
         <input type="hidden" name="edit-message" value="1">
         <input type="hidden" name="id" id="edit-message-id">
-        <input type="hidden" name="page" value="<?= $page ?? 1 ?>">
+        <input type="hidden" name="page" value="<?= $pagination->current_page ?? 1 ?>">
 
         <div class="mb-4">
           <label for="edit-message-text" class="block text-gray-700 font-medium mb-2">Message</label>
@@ -155,6 +155,8 @@
       button.addEventListener('click', function() {
         const messageId = this.getAttribute('data-message-id');
         const messageText = this.getAttribute('data-message-text');
+
+        console.log('messageId', messageId)
 
         editMessageId.value = messageId;
         editMessageText.value = messageText;

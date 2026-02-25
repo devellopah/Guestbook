@@ -230,10 +230,25 @@ class User
     return $this->email;
   }
 
-  public function getRole(): int
+  public function getRoleId(): int
   {
     return $this->role;
   }
+
+  public function getRoleLabel(): string
+  {
+    return match ($this->role) {
+      1 => 'User',
+      2 => 'Admin',
+      default => 'Unknown',
+    };
+  }
+
+  public function getRole(): ?\Core\Role
+  {
+    return \Core\Role::tryFrom($this->role);
+  }
+
 
   public function getCreatedAt(): ?string
   {

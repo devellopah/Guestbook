@@ -156,8 +156,6 @@
         const messageId = this.getAttribute('data-message-id');
         const messageText = this.getAttribute('data-message-text');
 
-        console.log('messageId', messageId)
-
         editMessageId.value = messageId;
         editMessageText.value = messageText;
         editModal.classList.remove('hidden');

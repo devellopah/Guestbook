@@ -106,6 +106,7 @@ abstract class BaseController
     return isset($_SESSION['user']) && $_SESSION['user']['role'] == 2;
   }
 
+
   protected function getUser(): ?array
   {
     return $_SESSION['user'] ?? null;

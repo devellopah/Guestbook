@@ -86,7 +86,8 @@ class MessageController extends BaseController
 
         // Check if user can edit this message (owner or admin)
         $user = $this->getUser();
-        if ($user['id'] !== $message->getUserId() && !$this->checkAdmin()) {
+        $role = \Core\Role::tryFrom($user['role']);
+        if ($user['id'] !== $message->getUserId() && $role && !$role->canEditAnyMessage()) {
           $this->flash('error', 'You can only edit your own messages');
           $this->redirect("/?page={$data['page']}");
           return;

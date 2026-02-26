@@ -4,6 +4,7 @@ namespace Models;
 
 use Exception;
 use Valitron\Validator;
+use Models\Database;
 
 class Message
 {

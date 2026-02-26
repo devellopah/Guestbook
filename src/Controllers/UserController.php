@@ -42,7 +42,7 @@ class UserController extends BaseController
             'id' => $user->getId(),
             'name' => $user->getName(),
             'email' => $user->getEmail(),
-            'role' => $user->getRole()
+            'role' => $user->getRoleId()
           ];
 
           $this->flash('success', 'Successfully logged in');

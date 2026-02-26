@@ -55,7 +55,9 @@ if ($user->isAdmin()) {
     // Пользователь - администратор
 }
 
-echo $user->getRoleLabel(); // "Admin" или "User"
+$userRole = $user->getRole();
+$label = $userRole ? $userRole->label() : 'Unknown';
+echo $label; // "Administrator" или "User"
 ```
 
 ### В видах

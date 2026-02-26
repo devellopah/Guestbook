@@ -37,7 +37,7 @@ class Message
     ]);
 
     $v->rule('required', 'message');
-    $v->rule('lengthMin', 'message', 1);
+    $v->rule('lengthMin', 'message', 2);
     $v->rule('lengthMax', 'message', 1000);
 
     if (!$v->validate()) {
@@ -108,11 +108,11 @@ class Message
   {
     try {
       $stmt = Database::query("
-                SELECT m.*, u.name as user_name 
-                FROM messages m 
-                JOIN users u ON u.id = m.user_id 
-                WHERE m.id = ?
-            ", [$id]);
+        SELECT m.*, u.name as user_name
+        FROM messages m
+        JOIN users u ON u.id = m.user_id
+        WHERE m.id = ?
+      ", [$id]);
 
       $row = $stmt->fetch();
 
@@ -139,13 +139,13 @@ class Message
     try {
       $where = $onlyActive ? 'WHERE m.status = 1' : '';
       $sql = "
-                SELECT m.*, u.name as user_name, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at_formatted
-                FROM messages m 
-                JOIN users u ON u.id = m.user_id 
-                {$where}
-                ORDER BY m.id DESC 
-                LIMIT :limit OFFSET :offset
-            ";
+        SELECT m.*, u.name as user_name, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at_formatted
+        FROM messages m
+        JOIN users u ON u.id = m.user_id
+        {$where}
+        ORDER BY m.id DESC
+        LIMIT :limit OFFSET :offset
+      ";
 
       $stmt = Database::query($sql, [
         'limit' => $limit,

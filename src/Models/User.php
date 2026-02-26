@@ -5,6 +5,7 @@ namespace Models;
 use Exception;
 use Valitron\Validator;
 use Models\Database;
+use Core\Role;
 
 class User
 {
@@ -12,7 +13,7 @@ class User
   private string $name = '';
   private string $email = '';
   private string $password = '';
-  private int $role = 1;
+  private int $role = Role::USER->value;
   private ?string $created_at = null;
 
   public function __construct(array $data = [])
@@ -233,15 +234,6 @@ class User
   public function getRoleId(): int
   {
     return $this->role;
-  }
-
-  public function getRoleLabel(): string
-  {
-    return match ($this->role) {
-      1 => 'User',
-      2 => 'Admin',
-      default => 'Unknown',
-    };
   }
 
   public function getRole(): ?\Core\Role

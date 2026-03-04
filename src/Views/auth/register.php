@@ -1,11 +1,7 @@
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full space-y-8">
     <div class="bg-white py-8 px-4 shadow-xl rounded-lg sm:px-10">
-      <?php if (isset($flash) && $flash['type'] === 'error'): ?>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6" role="alert">
-          <?= $flash['message'] ?>
-        </div>
-      <?php endif; ?>
+
 
       <div class="text-center mb-6">
         <div class="mx-auto h-16 w-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-full flex items-center justify-center mb-4">

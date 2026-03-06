@@ -7,30 +7,16 @@ use Valitron\Validator;
 use Models\Database;
 use Core\Role;
 
-class User
+class User extends BaseModel
 {
-  private ?int $id = null;
-  private string $name = '';
-  private string $email = '';
-  private string $password = '';
-  private int $role = Role::USER->value;
-  private ?string $created_at = null;
+  protected string $table = 'users';
+  protected array $fillable = ['name', 'email', 'password', 'role'];
 
-  public function __construct(array $data = [])
-  {
-    if (!empty($data)) {
-      $this->fill($data);
-    }
-  }
-
-  public function fill(array $data): void
-  {
-    foreach ($data as $key => $value) {
-      if (property_exists($this, $key)) {
-        $this->$key = $value;
-      }
-    }
-  }
+  protected string $name = '';
+  protected string $email = '';
+  protected string $password = '';
+  protected int $role = Role::USER->value;
+  protected ?string $created_at = null;
 
   public function validate(): array
   {
@@ -89,7 +75,7 @@ class User
     }
   }
 
-  private function create(): bool
+  protected function create(): bool
   {
     $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
 
@@ -111,7 +97,7 @@ class User
     return false;
   }
 
-  private function update(): bool
+  protected function update(): bool
   {
     $sql = "UPDATE users SET name = :name, email = :email";
     $params = [

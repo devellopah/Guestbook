@@ -6,30 +6,16 @@ use Exception;
 use Valitron\Validator;
 use Models\Database;
 
-class Message
+class Message extends BaseModel
 {
-  private ?int $id = null;
-  private ?int $user_id = null;
-  private string $message = '';
-  private int $status = 1;
-  private ?string $created_at = null;
-  private ?User $user = null;
+  protected string $table = 'messages';
+  protected array $fillable = ['user_id', 'message', 'status'];
 
-  public function __construct(array $data = [])
-  {
-    if (!empty($data)) {
-      $this->fill($data);
-    }
-  }
-
-  public function fill(array $data): void
-  {
-    foreach ($data as $key => $value) {
-      if (property_exists($this, $key)) {
-        $this->$key = $value;
-      }
-    }
-  }
+  protected ?int $user_id = null;
+  protected string $message = '';
+  protected int $status = 1;
+  protected ?string $created_at = null;
+  protected ?User $user = null;
 
   public function validate(): array
   {
@@ -73,7 +59,7 @@ class Message
     }
   }
 
-  private function create(): bool
+  protected function create(): bool
   {
     $sql = "INSERT INTO messages (user_id, message, status) VALUES (:user_id, :message, :status)";
     $params = [
@@ -92,7 +78,7 @@ class Message
     return false;
   }
 
-  private function update(): bool
+  protected function update(): bool
   {
     $sql = "UPDATE messages SET message = :message, status = :status WHERE id = :id";
     $params = [

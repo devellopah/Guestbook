@@ -53,7 +53,8 @@ class Message
     $errors = $this->validate();
     if (!empty($errors)) {
       throw new Exception(implode(', ', array_map(function ($field, $messages) {
-        return ucfirst($field) . ': ' . implode(', ', $messages);
+        // return ucfirst($field) . ': ' . implode(', ', $messages);
+        return reset($messages);
       }, array_keys($errors), $errors)));
     }
 

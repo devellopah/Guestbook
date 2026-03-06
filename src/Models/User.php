@@ -68,7 +68,6 @@ class User
     $errors = $this->validate();
     if (!empty($errors)) {
       throw new Exception(implode(', ', array_map(function ($field, $messages) {
-        // return ucfirst($field) . ': ' . reset($messages);
         return reset($messages);
       }, array_keys($errors), $errors)));
     }

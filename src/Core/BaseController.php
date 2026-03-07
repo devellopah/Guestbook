@@ -106,7 +106,6 @@ abstract class BaseController
     return isset($_SESSION['user']) && $_SESSION['user']['role'] == 2;
   }
 
-
   protected function getUser(): ?array
   {
     return $_SESSION['user'] ?? null;
@@ -194,7 +193,7 @@ abstract class BaseController
     return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
   }
 
-  protected function old(string $name, $post = true): string
+  protected function old(string $name, bool $post = true): string
   {
     $loadData = $post ? $_POST : $_GET;
     return isset($loadData[$name]) ? $this->h(trim($loadData[$name])) : '';

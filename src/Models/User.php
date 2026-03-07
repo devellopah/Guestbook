@@ -227,7 +227,6 @@ class User extends BaseModel
     return \Core\Role::tryFrom($this->role);
   }
 
-
   public function getCreatedAt(): ?string
   {
     return $this->created_at;

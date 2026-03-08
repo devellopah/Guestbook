@@ -19,6 +19,33 @@ class Router
     $this->post('login', 'UserController', 'login');
     $this->post('register', 'UserController', 'register');
     $this->get('logout', 'UserController', 'logout');
+
+    // Test routes for error handling (only in development)
+    if ($this->isDevelopmentMode()) {
+      $this->get('test/error', 'TestController', 'triggerError');
+      $this->get('test/notfound', 'TestController', 'triggerNotFound');
+      $this->get('test/badrequest', 'TestController', 'triggerBadRequest');
+      $this->get('test/fatal', 'TestController', 'triggerFatalError');
+    }
+  }
+
+  private function isDevelopmentMode(): bool
+  {
+    // Check environment variable
+    if (getenv('APP_ENV') === 'development') {
+      return true;
+    }
+
+    // Check .env file
+    $envFile = __DIR__ . '/../../.env';
+    if (file_exists($envFile)) {
+      $envContent = file_get_contents($envFile);
+      if (strpos($envContent, 'APP_ENV=development') !== false) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public function get(string $path, string $controller, string $method): self

@@ -18,6 +18,6 @@ if (getenv('APP_ENV') === 'development') {
   define('DEBUG_MODE', false);
 }
 
-// Initialize the router and dispatch the request
-$router = new \Core\Router();
-$router->dispatch();
+// Initialize application with DI container
+$app = \Core\Application::getInstance();
+$app->run();

@@ -2,10 +2,20 @@
 
 namespace Core;
 
-use Controllers\UserController;
+use Services\MessageService;
+use Services\UserService;
 
 abstract class BaseController
 {
+  protected MessageService $messageService;
+  protected UserService $userService;
+
+  public function __construct(MessageService $messageService, UserService $userService)
+  {
+    $this->messageService = $messageService;
+    $this->userService = $userService;
+  }
+
   protected function render(string $view, array $data = []): void
   {
     // Extract data to variables

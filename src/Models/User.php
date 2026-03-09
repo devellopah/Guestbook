@@ -144,6 +144,23 @@ class User extends BaseModel
     }
   }
 
+  public static function findByUsername(string $username): ?self
+  {
+    try {
+      $stmt = Database::query("SELECT * FROM users WHERE name = ?", [$username]);
+      $row = $stmt->fetch();
+
+      if ($row) {
+        return new self($row);
+      }
+
+      return null;
+    } catch (Exception $e) {
+      error_log("User findByUsername error: " . $e->getMessage());
+      return null;
+    }
+  }
+
   public static function findById(int $id): ?self
   {
     try {

@@ -3,7 +3,6 @@
 namespace Controllers;
 
 use Core\BaseController;
-use Models\User;
 use Exception;
 
 class UserController extends BaseController
@@ -34,9 +33,9 @@ class UserController extends BaseController
       $data = $this->getPostData(['email', 'password']);
 
       try {
-        $user = User::findByEmail($data['email']);
+        $user = $this->userService->authenticate($data['email'], $data['password']);
 
-        if ($user && $user->authenticate($data['password'])) {
+        if ($user) {
           // Set session data
           $_SESSION['user'] = [
             'id' => $user->getId(),
@@ -87,8 +86,7 @@ class UserController extends BaseController
       $data = $this->getPostData(['name', 'email', 'password']);
 
       try {
-        $user = new User($data);
-        $user->save();
+        $user = $this->userService->createUser($data['name'], $data['email'], $data['password']);
 
         $this->flash('success', 'You have successfully registered');
         $this->redirect('/login');

@@ -2,13 +2,19 @@
 
 namespace Core;
 
+use Services\MessageService;
+use Services\UserService;
+
 class Router
 {
   private array $routes = [];
   private string $basePath = '';
+  private Container $container;
 
-  public function __construct()
+  public function __construct(Container $container)
   {
+    $this->container = $container;
+
     // Define all application routes
     $this->get('', 'MessageController', 'index');
     $this->get('/', 'MessageController', 'index');
@@ -115,7 +121,8 @@ class Router
       throw new \Exception("Controller {$controllerClass} not found");
     }
 
-    $controller = new $controllerClass();
+    // Use DI container to create controller instance
+    $controller = $this->container->make($controllerClass);
 
     if (!method_exists($controller, $method)) {
       throw new \Exception("Method {$method} not found in {$controllerClass}");

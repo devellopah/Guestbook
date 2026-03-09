@@ -3,10 +3,7 @@
 namespace Controllers;
 
 use Core\BaseController;
-use Models\Message;
-use Models\Pagination;
 use Exception;
-
 
 class MessageController extends BaseController
 {
@@ -54,11 +51,8 @@ class MessageController extends BaseController
     }
 
     try {
-      $message = new Message([
-        'user_id' => $this->getUser()['id'],
-        'message' => $data['message']
-      ]);
-      $message->save();
+      $user = $this->getUser();
+      $message = $this->messageService->createMessage($user['id'], $data['message']);
 
       $this->flash('success', 'Message added');
       $this->redirect('/');
@@ -89,25 +83,16 @@ class MessageController extends BaseController
     $data = $this->getPostData(['message', 'id', 'page']);
 
     try {
-      $message = Message::findById((int) $data['id']);
-
-      if (!$message) {
-        $this->flash('error', 'Message not found');
-        $this->redirect("/?page={$data['page']}");
-        return;
-      }
-
-      // Check if user can edit this message (owner or admin)
       $user = $this->getUser();
       $role = \Core\Role::tryFrom($user['role']);
-      if ($user['id'] !== $message->getUserId() && $role && !$role->canEditAnyMessage()) {
-        $this->flash('error', 'You can only edit your own messages');
-        $this->redirect("/?page={$data['page']}");
-        return;
-      }
+      $isAdmin = $role && $role->canEditAnyMessage();
 
-      $message->setMessage($data['message']);
-      $message->save();
+      $message = $this->messageService->updateMessage(
+        (int) $data['id'],
+        $data['message'],
+        $user['id'],
+        $isAdmin
+      );
 
       $this->flash('success', 'Message was saved');
       $this->redirect("/?page={$data['page']}#message-{$data['id']}");
@@ -130,15 +115,10 @@ class MessageController extends BaseController
     }
 
     $id = (int) ($_GET['id'] ?? 0);
-    $status = isset($_GET['status']) ? (int) $_GET['status'] : 0;
     $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 
     try {
-      $message = Message::findById($id);
-
-      if ($message) {
-        $message->toggleStatus();
-      }
+      $message = $this->messageService->toggleMessageStatus($id);
     } catch (Exception $e) {
       error_log("Toggle status error: " . $e->getMessage());
     }
@@ -154,12 +134,12 @@ class MessageController extends BaseController
     // Get pagination data
     $page = (int) ($_GET['page'] ?? 1);
     $perPage = 4;
-    $total = Message::getCount(!$this->checkAdmin());
-    $pagination = new Pagination($page, $perPage, $total);
-    $start = $pagination->getStart();
+    $onlyActive = !$this->checkAdmin();
 
-    // Get messages
-    $messages = Message::getAll($perPage, $start, !$this->checkAdmin());
+    // Use MessageService to get messages
+    $result = $this->messageService->getMessages($page, $perPage, $onlyActive);
+    $messages = $result['messages'];
+    $pagination = $result['pagination'];
 
     // Get user data if authenticated
     $user = $this->checkAuth() ? $this->getUser() : null;

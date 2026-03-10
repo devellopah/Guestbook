@@ -1,15 +1,18 @@
 # Guestbook Application
 
-A modern PHP guestbook application with comprehensive testing, Docker containerization, and security best practices.
+A modern PHP guestbook application with role-based access control, Docker support, and comprehensive testing.
 
 ## Features
 
-- User registration and authentication
-- Guestbook message posting and management
-- Admin panel for message approval/moderation
-- Pagination for message display
-- Comprehensive test suite with PHPUnit
-- Docker containerization for easy deployment
+- **Role-based Access Control**: Three user roles (User, Moderator, Admin)
+- **Docker Support**: Complete Docker setup with MySQL and phpMyAdmin
+- **Modern PHP**: PHP 8.2+ with Composer autoloading
+- **MVC Architecture**: Clean separation of concerns
+- **Security**: CSRF protection, password hashing, input validation
+- **Testing**: PHPUnit tests with coverage reporting
+- **Database**: MySQL with prepared statements
+- **Pagination**: Efficient message pagination
+- **Error Handling**: Custom error pages and logging
 
 ## Installation
 

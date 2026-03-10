@@ -189,6 +189,17 @@ class User extends BaseModel
     }
   }
 
+  public static function usernameExists(string $username): bool
+  {
+    try {
+      $stmt = Database::query("SELECT COUNT(*) FROM users WHERE name = ?", [$username]);
+      return $stmt->fetchColumn() > 0;
+    } catch (Exception $e) {
+      error_log("User usernameExists error: " . $e->getMessage());
+      return false;
+    }
+  }
+
   public static function getAll(int $limit = 10, int $offset = 0): array
   {
     try {

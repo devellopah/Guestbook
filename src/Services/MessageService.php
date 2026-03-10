@@ -5,8 +5,9 @@ namespace Services;
 use Models\Message;
 use Models\Pagination;
 use Exception;
+use Services\Interfaces\MessageServiceInterface;
 
-class MessageService
+class MessageService extends BaseService implements MessageServiceInterface
 {
   public function getMessages(int $page = 1, int $perPage = 4, bool $onlyActive = true): array
   {
@@ -66,5 +67,21 @@ class MessageService
   public function getMessageById(int $messageId): ?Message
   {
     return Message::findById($messageId);
+  }
+
+  public function deleteMessage(int $messageId, int $userId, bool $isAdmin = false): bool
+  {
+    $message = Message::findById($messageId);
+
+    if (!$message) {
+      throw new Exception('Message not found');
+    }
+
+    // Check permissions
+    if (!$isAdmin && $userId !== $message->getUserId()) {
+      throw new Exception('You can only delete your own messages');
+    }
+
+    return $message->delete();
   }
 }

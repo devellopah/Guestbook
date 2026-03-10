@@ -4,8 +4,9 @@ namespace Services;
 
 use Models\User;
 use Exception;
+use Services\Interfaces\UserServiceInterface;
 
-class UserService
+class UserService extends BaseService implements UserServiceInterface
 {
   public function getUserById(int $userId): ?User
   {
@@ -77,5 +78,15 @@ class UserService
     }
 
     return $user->delete();
+  }
+
+  public function emailExists(string $email): bool
+  {
+    return User::emailExists($email);
+  }
+
+  public function usernameExists(string $username): bool
+  {
+    return User::usernameExists($username);
   }
 }

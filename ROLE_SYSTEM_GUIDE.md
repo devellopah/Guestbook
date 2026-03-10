@@ -1,90 +1,90 @@
-# Система Ролей - Руководство
+# Role System Guide
 
-## Обзор
+## Overview
 
-Новая система ролей основана на PHP enum и предоставляет типобезопасное управление правами пользователей.
+The new role system is based on PHP enum and provides type-safe user permission management.
 
-## Роли
+## Roles
 
 ### Role::USER (1)
-- Обычный пользователь
-- Может просматривать сообщения
-- Может добавлять свои сообщения
-- Может редактировать только свои сообщения
+- Regular user
+- Can view messages
+- Can add own messages
+- Can edit only own messages
 
 ### Role::ADMIN (2)
-- Администратор
-- Все права USER
-- Может редактировать любые сообщения
-- Может управлять пользователями
-- Может изменять статус сообщений
+- Administrator
+- All USER permissions
+- Can edit any messages
+- Can manage users
+- Can change message status
 
-## Использование
+## Usage
 
-### Проверка ролей
+### Role Checking
 
 ```php
-// Проверка на администратора
+// Admin check
 if ($this->checkAdmin()) {
-    // Действия для администратора
+    // Admin actions
 }
 
-// Проверка прав через enum (рекомендуемый способ)
+// Role checking through enum (recommended way)
 $role = \Core\Role::tryFrom($user['role']);
 if ($role && $role->canEditAnyMessage()) {
-    // Может редактировать любые сообщения
+    // Can edit any messages
 }
 
 if ($role && $role->canManageUsers()) {
-    // Может управлять пользователями
+    // Can manage users
 }
 
-// Или с использованием метода User::getRole()
+// Or using User::getRole() method
 $role = $user->getRole();
 if ($role && $role->canEditAnyMessage()) {
-    // Может редактировать любые сообщения
+    // Can edit any messages
 }
 ```
 
-### В моделях
+### In Models
 
 ```php
-// User модель
+// User model
 $user = User::findById(1);
 if ($user->isAdmin()) {
-    // Пользователь - администратор
+    // User is administrator
 }
 
 $userRole = $user->getRole();
 $label = $userRole ? $userRole->label() : 'Unknown';
-echo $label; // "Administrator" или "User"
+echo $label; // "Administrator" or "User"
 ```
 
-### В видах
+### In Views
 
 ```php
-// Отображение роли в шаблоне
+// Display role in template
 <?php if ($user['role'] == 2): ?>
     <span class="admin-badge">Admin</span>
 <?php endif; ?>
 ```
 
-## Преимущества
+## Advantages
 
-1. **Типобезопасность** - enum гарантирует валидные значения
-2. **Читаемость** - понятные названия методов
-3. **Расширяемость** - легко добавить новые роли
-4. **Гибкость** - отдельные методы для разных прав
+1. **Type Safety** - enum guarantees valid values
+2. **Readability** - clear method names
+3. **Extensibility** - easy to add new roles
+4. **Flexibility** - separate methods for different permissions
 
-## Методы проверки прав
+## Permission Checking Methods
 
-- `canEditAnyMessage()` - может редактировать любые сообщения
-- `canManageUsers()` - может управлять пользователями
-- `canToggleMessageStatus()` - может изменять статус сообщений
-- `canDeleteMessages()` - может удалять сообщения
+- `canEditAnyMessage()` - can edit any messages
+- `canManageUsers()` - can manage users
+- `canToggleMessageStatus()` - can change message status
+- `canDeleteMessages()` - can delete messages
 
-## Миграция
+## Migration
 
-Существующие данные в базе данных остаются неизменными:
+Existing data in the database remains unchanged:
 - `role = 1` → USER
 - `role = 2` → ADMIN

@@ -4,6 +4,8 @@ namespace Core;
 
 use Services\MessageService;
 use Services\UserService;
+use Services\Interfaces\MessageServiceInterface;
+use Services\Interfaces\UserServiceInterface;
 
 class Application
 {
@@ -31,6 +33,10 @@ class Application
 
   private function registerServices(): void
   {
+    // Register service interfaces to implementations
+    $this->container->singleton(MessageServiceInterface::class, MessageService::class);
+    $this->container->singleton(UserServiceInterface::class, UserService::class);
+
     // Register services as singletons
     $this->container->singleton(MessageService::class);
     $this->container->singleton(UserService::class);
@@ -44,6 +50,9 @@ class Application
     $this->container->singleton(\Controllers\MessageController::class);
     $this->container->singleton(\Controllers\UserController::class);
     $this->container->singleton(\Controllers\TestController::class);
+
+    // Register AuthService
+    $this->container->singleton(\Services\AuthService::class);
   }
 
   public function run(): void

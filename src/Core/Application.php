@@ -53,6 +53,9 @@ class Application
 
     // Register AuthService
     $this->container->singleton(\Services\AuthService::class);
+
+    // Register CacheService
+    $this->container->singleton(\Services\CacheService::class);
   }
 
   public function run(): void

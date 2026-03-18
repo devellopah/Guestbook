@@ -5,7 +5,7 @@ namespace Tests\Unit;
 use Core\Role;
 use PHPUnit\Framework\TestCase;
 
-class RoleTest extends TestCase
+class UserRoleTest extends TestCase
 {
   public function testUserCanNotEditAnyMessage(): void
   {

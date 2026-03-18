@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Tests\Unit;
+namespace Tests\Unit;
 
-use App\Tests\BaseTestCase;
 use Valitron\Validator;
+use PHPUnit\Framework\TestCase;
 
-class UserTest extends BaseTestCase
+class UserTest extends TestCase
 {
   protected function setUp(): void
   {
     parent::setUp();
-    $this->clearTestData();
   }
 
   public function testUserRegistrationSuccess(): void

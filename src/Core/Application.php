@@ -56,6 +56,9 @@ class Application
 
     // Register CacheService
     $this->container->singleton(\Services\CacheService::class);
+
+    // Register ValidationService
+    $this->container->singleton(\Services\ValidationService::class);
   }
 
   public function run(): void

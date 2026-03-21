@@ -59,6 +59,9 @@ class Application
 
     // Register ValidationService
     $this->container->singleton(\Services\ValidationService::class);
+
+    // Register LoggingService
+    $this->container->singleton(\Services\LoggingService::class);
   }
 
   public function run(): void

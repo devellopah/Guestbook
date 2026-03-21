@@ -237,7 +237,8 @@ class ValidationService extends BaseService
         $params[] = $excludeUserId;
       }
 
-      $stmt = $this->db->query($sql, $params);
+      $stmt = $this->db->prepare($sql);
+      $stmt->execute($params);
       return $stmt->fetchColumn() > 0;
     } catch (Exception $e) {
       $this->log('Email existence check failed', ['email' => $email, 'error' => $e->getMessage()]);
@@ -264,7 +265,8 @@ class ValidationService extends BaseService
         $params[] = $excludeUserId;
       }
 
-      $stmt = $this->db->query($sql, $params);
+      $stmt = $this->db->prepare($sql);
+      $stmt->execute($params);
       return $stmt->fetchColumn() > 0;
     } catch (Exception $e) {
       $this->log('Username existence check failed', ['username' => $username, 'error' => $e->getMessage()]);

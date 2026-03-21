@@ -1,76 +1,76 @@
 <?php
 
-namespace Tests\Unit;
+namespace App\Tests\Unit;
 
-use Core\Role;
+use Core\UserRole;
 use PHPUnit\Framework\TestCase;
 
 class UserRoleTest extends TestCase
 {
   public function testUserCanNotEditAnyMessage(): void
   {
-    $this->assertFalse(Role::USER->canEditAnyMessage());
+    $this->assertFalse(UserRole::USER->canEditAnyMessage());
   }
 
   public function testAdminCanEditAnyMessage(): void
   {
-    $this->assertTrue(Role::ADMIN->canEditAnyMessage());
+    $this->assertTrue(UserRole::ADMIN->canEditAnyMessage());
   }
 
   public function testUserCanNotManageUsers(): void
   {
-    $this->assertFalse(Role::USER->canManageUsers());
+    $this->assertFalse(UserRole::USER->canManageUsers());
   }
 
   public function testAdminCanManageUsers(): void
   {
-    $this->assertTrue(Role::ADMIN->canManageUsers());
+    $this->assertTrue(UserRole::ADMIN->canManageUsers());
   }
 
   public function testUserCanNotToggleMessageStatus(): void
   {
-    $this->assertFalse(Role::USER->canToggleMessageStatus());
+    $this->assertFalse(UserRole::USER->canToggleMessageStatus());
   }
 
   public function testAdminCanToggleMessageStatus(): void
   {
-    $this->assertTrue(Role::ADMIN->canToggleMessageStatus());
+    $this->assertTrue(UserRole::ADMIN->canToggleMessageStatus());
   }
 
   public function testUserCanNotDeleteMessages(): void
   {
-    $this->assertFalse(Role::USER->canDeleteMessages());
+    $this->assertFalse(UserRole::USER->canDeleteMessages());
   }
 
   public function testAdminCanDeleteMessages(): void
   {
-    $this->assertTrue(Role::ADMIN->canDeleteMessages());
+    $this->assertTrue(UserRole::ADMIN->canDeleteMessages());
   }
 
   public function testUserLabel(): void
   {
-    $this->assertEquals('User', Role::USER->label());
+    $this->assertEquals('User', UserRole::USER->label());
   }
 
   public function testAdminLabel(): void
   {
-    $this->assertEquals('Admin', Role::ADMIN->label());
+    $this->assertEquals('Admin', UserRole::ADMIN->label());
   }
 
   public function testTryFromWithValidRole(): void
   {
-    $role = Role::tryFrom(1);
-    $this->assertInstanceOf(Role::class, $role);
-    $this->assertEquals(Role::USER, $role);
+    $role = UserRole::tryFrom(1);
+    $this->assertInstanceOf(UserRole::class, $role);
+    $this->assertEquals(UserRole::USER, $role);
 
-    $adminRole = Role::tryFrom(2);
-    $this->assertInstanceOf(Role::class, $adminRole);
-    $this->assertEquals(Role::ADMIN, $adminRole);
+    $adminRole = UserRole::tryFrom(2);
+    $this->assertInstanceOf(UserRole::class, $adminRole);
+    $this->assertEquals(UserRole::ADMIN, $adminRole);
   }
 
   public function testTryFromWithInvalidRole(): void
   {
-    $result = Role::tryFrom(99);
+    $result = UserRole::tryFrom(99);
     $this->assertNull($result);
   }
 }

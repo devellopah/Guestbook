@@ -1,17 +1,15 @@
 <?php
 
-namespace App\Tests\Integration;
+namespace Tests\Integration;
 
-use App\Tests\BaseTestCase;
+use Tests\BaseTestCase;
 
 class DatabaseTest extends BaseTestCase
 {
   public function testDatabaseConnection(): void
   {
-    global $db;
-
-    // Test that we can execute a simple query
-    $stmt = $db->query("SELECT 1 as test");
+    // Test that we can execute a simple query using Database model
+    $stmt = \Models\Database::query("SELECT 1 as test");
     $result = $stmt->fetch();
 
     $this->assertNotFalse($result, 'Database connection should work');
@@ -20,10 +18,8 @@ class DatabaseTest extends BaseTestCase
 
   public function testUsersTableExists(): void
   {
-    global $db;
-
     // Test that users table exists and has expected structure
-    $stmt = $db->query("DESCRIBE users");
+    $stmt = \Models\Database::query("DESCRIBE users");
     $columns = $stmt->fetchAll();
 
     $this->assertNotEmpty($columns, 'Users table should exist');
@@ -39,10 +35,8 @@ class DatabaseTest extends BaseTestCase
 
   public function testMessagesTableExists(): void
   {
-    global $db;
-
     // Test that messages table exists and has expected structure
-    $stmt = $db->query("DESCRIBE messages");
+    $stmt = \Models\Database::query("DESCRIBE messages");
     $columns = $stmt->fetchAll();
 
     $this->assertNotEmpty($columns, 'Messages table should exist');

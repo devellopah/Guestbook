@@ -7,11 +7,11 @@ use Models\Database;
 
 abstract class BaseService
 {
-  protected Database $db;
+  protected \PDO $db;
 
   public function __construct()
   {
-    $this->db = new Database();
+    $this->db = \Models\Database::getInstance();
   }
 
   /**

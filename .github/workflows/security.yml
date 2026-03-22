@@ -22,16 +22,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["php"]
+        languages: ["php"]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
+          languages: ${{ matrix.languages }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -44,7 +44,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
   dependency-review:
     name: Dependency Review
@@ -92,7 +92,7 @@ jobs:
           args: --severity-threshold=high
 
       - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: snyk.sarif

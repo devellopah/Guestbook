@@ -1,0 +1,24 @@
+parameters:
+  level: 8
+  paths:
+    - src
+  excludePaths:
+    - tests/*
+  autoload_files:
+    - vendor/autoload.php
+  ignoreErrors:
+    # Ignore errors related to missing return types in interface implementations
+    - '#Method .* should return .* but returns .*#'
+    # Ignore errors related to dynamic property access
+    - '#Access to an undefined property .*#'
+    # Ignore errors related to array access on mixed types
+    - '#Array access to mixed .*#'
+
+includes:
+  - phpstan-phpunit.neon
+
+services:
+  -
+    class: PHPStan\Rules\Deprecations\DeprecatedScopeRule
+    tags:
+      - phpstan.rules.rule

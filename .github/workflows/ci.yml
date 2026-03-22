@@ -1,0 +1,243 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, intl, gd, pdo_mysql
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: PHP Syntax Check
+        run: find src tests -name "*.php" -exec php -l {} \;
+
+      - name: PHPStan Analysis
+        run: vendor/bin/phpstan analyse src --error-format=github
+
+      - name: PHP-CS-Fixer Check
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, intl, gd, pdo_mysql
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run Composer Audit
+        run: composer audit --format=github
+        continue-on-error: true
+
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan]
+
+    strategy:
+      matrix:
+        php-version: ["8.1", "8.2", "8.3"]
+        os: [ubuntu-latest]
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: guestbook_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, intl, gd, pdo_mysql, xdebug
+          coverage: xdebug
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Wait for MySQL
+        run: sleep 10
+
+      - name: Setup test database
+        run: |
+          mysql -h 127.0.0.1 -u root -ppassword -e "CREATE DATABASE IF NOT EXISTS guestbook_test;"
+          mysql -h 127.0.0.1 -u root -ppassword guestbook_test < guestbook.sql
+
+      - name: Run tests
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: password
+          TEST_DB_NAME: guestbook_test
+          TEST_MODE: true
+        run: vendor/bin/phpunit --coverage-clover build/logs/clover.xml --coverage-html build/coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./build/coverage/clover.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  docker-build:
+    name: Docker Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: docker build -t guestbook-test .
+
+      - name: Test Docker image
+        run: |
+          docker run -d --name test-db -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=guestbook_test mysql:8.0
+          sleep 30
+          docker run --rm --link test-db:db -e DB_HOST=db -e DB_USER=root -e DB_PASS=password -e DB_NAME=guestbook_test guestbook-test php -r "require_once 'vendor/autoload.php'; try { \$db = Models\Database::getInstance(); echo 'Database connection successful'; } catch (Exception \$e) { echo 'Database connection failed: ' . \$e->getMessage(); exit(1); }"
+          docker stop test-db
+
+      - name: Scan Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "guestbook-test"
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: [test, docker-build]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, intl, gd, pdo_mysql
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader --classmap-authoritative
+
+      - name: Validate build
+        run: |
+          php -l index.php
+          php -r "require_once 'vendor/autoload.php'; echo 'Autoload successful';"
+
+      - name: Create build artifacts
+        run: |
+          mkdir -p build/artifacts
+          composer install --prefer-dist --no-dev --optimize-autoloader --classmap-authoritative
+          tar -czf build/artifacts/guestbook-source.tar.gz --exclude=vendor --exclude=.git --exclude=tests --exclude=build .
+          cp -r vendor build/artifacts/
+          cp composer.json composer.lock build/artifacts/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: build/artifacts/
+          retention-days: 7
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, test, docker-build, build]
+    if: always()
+
+    steps:
+      - name: Notify on Success
+        if: needs.code-quality.result == 'success' && needs.security-scan.result == 'success' && needs.test.result == 'success' && needs.docker-build.result == 'success' && needs.build.result == 'success'
+        run: echo "✅ All CI checks passed successfully!"
+
+      - name: Notify on Failure
+        if: needs.code-quality.result == 'failure' || needs.security-scan.result == 'failure' || needs.test.result == 'failure' || needs.docker-build.result == 'failure' || needs.build.result == 'failure'
+        run: |
+          echo "❌ CI pipeline failed!"
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo "Tests: ${{ needs.test.result }}"
+          echo "Docker Build: ${{ needs.docker-build.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          exit 1

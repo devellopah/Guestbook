@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.languages }}
 
@@ -44,7 +44,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
 
   dependency-review:
     name: Dependency Review
@@ -92,7 +92,7 @@ jobs:
           args: --severity-threshold=high
 
       - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: snyk.sarif

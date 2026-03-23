@@ -13,6 +13,9 @@ permissions:
   security-events: write
   actions: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   codeql-analysis:
     name: CodeQL Analysis
@@ -29,13 +32,13 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
-          languages: php
+          languages: javascript-typescript
           build-mode: none
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
 
   dependency-review:
     name: Dependency Review
@@ -63,7 +66,7 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          extra_args: --only-verified --no-verification
+          extra_args: --no-verification
 
   snyk-security-scan:
     name: Snyk Security Scan
@@ -75,8 +78,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: composer install --no-progress --no-scripts --no-plugins
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+
+      - name: Update dependencies for PHP 8.3
+        run: |
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins
+          composer install --no-progress --no-scripts --no-plugins
 
       - name: Run Snyk
         uses: snyk/actions/php@master
@@ -87,7 +98,7 @@ jobs:
 
       - name: Upload SARIF
         if: ${{ !github.event.pull_request.head.repo.fork && success() }}
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: snyk.sarif
 
@@ -98,8 +109,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: composer install --no-progress
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+
+      - name: Update dependencies for PHP 8.3
+        run: |
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins
+          composer install --no-progress --no-scripts --no-plugins
 
       - name: Check licenses
         run: composer licenses

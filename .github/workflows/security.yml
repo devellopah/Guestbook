@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        languages: ["php"]
+        language: ["php"]
 
     steps:
       - name: Checkout repository
@@ -31,7 +31,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: ${{ matrix.languages }}
+          languages: ${{ matrix.language }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2

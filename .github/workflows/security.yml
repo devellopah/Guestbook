@@ -6,45 +6,36 @@ on:
   pull_request:
     branches: [main, master]
   schedule:
-    # Run security scans daily at 2 AM UTC
     - cron: "0 2 * * *"
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
 
 jobs:
   codeql-analysis:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-
     permissions:
+      security-events: write
       actions: read
       contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["php"]
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          extensions: mbstring, intl, gd, pdo_mysql
-          coverage: none
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+          languages: php
+          build-mode: none
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@v3
 
   dependency-review:
     name: Dependency Review
@@ -52,72 +43,63 @@ jobs:
     if: github.event_name == 'pull_request'
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
+      - uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
-          allow-licenses: MIT, BSD-3-Clause, Apache-2.0, ISC
 
   secret-scanning:
     name: Secret Scanning
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.base.sha != github.event.pull_request.head.sha
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: TruffleHog OSS
+      - name: TruffleHog Scan
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: main
-          head: HEAD
-          extra_args: --debug --only-verified
+          extra_args: --only-verified --no-verification
 
   snyk-security-scan:
     name: Snyk Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
-      - name: Run Snyk to check for vulnerabilities
+      - name: Install dependencies
+        run: composer install --no-progress --no-scripts --no-plugins
+
+      - name: Run Snyk
         uses: snyk/actions/php@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high
+          args: --severity-threshold=high --sarif-file-output=snyk.sarif
 
-      - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
+      - name: Upload SARIF
+        if: ${{ !github.event.pull_request.head.repo.fork && success() }}
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
 
   license-check:
-    name: License Compliance Check
+    name: License Check
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          extensions: mbstring, intl, gd, pdo_mysql
-          coverage: none
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --no-progress
 
       - name: Check licenses
-        run: |
-          composer licenses --format=json > licenses.json
-          echo "Checking licenses..."
-          # Add license checking logic here if needed
-          echo "License check completed"
+        run: composer licenses

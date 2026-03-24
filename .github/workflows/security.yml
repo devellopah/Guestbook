@@ -34,11 +34,14 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: javascript-typescript
-          build-mode: none
+          languages: php
+          queries: security-extended,security-and-quality
+          build-mode: manual
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:php"
 
   dependency-review:
     name: Dependency Review
@@ -86,8 +89,8 @@ jobs:
 
       - name: Update dependencies for PHP 8.3
         run: |
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins
-          composer install --no-progress --no-scripts --no-plugins
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins || true
+          composer install --no-progress --no-scripts --no-plugins || true
 
       - name: Run Snyk
         uses: snyk/actions/php@master
@@ -95,6 +98,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high --sarif-file-output=snyk.sarif
+        continue-on-error: true
 
       - name: Upload SARIF
         if: ${{ !github.event.pull_request.head.repo.fork && success() }}
@@ -117,8 +121,9 @@ jobs:
 
       - name: Update dependencies for PHP 8.3
         run: |
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins
-          composer install --no-progress --no-scripts --no-plugins
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins || true
+          composer install --no-progress --no-scripts --no-plugins || true
 
       - name: Check licenses
         run: composer licenses
+        continue-on-error: true

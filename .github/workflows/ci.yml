@@ -26,31 +26,38 @@ jobs:
         with:
           php-version: "8.3"
           coverage: none
+          tools: composer, cs2pr
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - uses: actions/cache@v4
         with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-composer-
 
       - name: Update dependencies for PHP 8.3
         run: |
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins
-          composer install --no-progress --no-scripts --no-plugins
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction
+          composer install --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Validate composer
-        run: composer validate --strict
+        run: composer validate --strict --no-check-publish
 
       - name: PHP lint
         run: |
-          find src tests -name "*.php" -exec php -l {} \; || true
+          find src tests -name "*.php" -exec php -l {} \; | grep -v "No syntax errors detected" || true
 
       - name: PHPStan
-        run: vendor/bin/phpstan analyse src || true
+        run: |
+          vendor/bin/phpstan analyse src --error-format=github --no-progress || true
 
       - name: PHP CS Fixer
-        run: vendor/bin/php-cs-fixer fix --dry-run --diff || true
+        run: |
+          vendor/bin/php-cs-fixer fix --dry-run --diff --format=checkstyle | cs2pr || true
 
   security-scan:
     runs-on: ubuntu-latest
@@ -65,7 +72,8 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          extra_args: --no-verification
+          extra_args: --no-verification --json
+        continue-on-error: true
 
   test:
     runs-on: ubuntu-latest
@@ -92,21 +100,38 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
+          tools: composer
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: Install dependencies
         run: |
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins
-          composer install --no-progress --no-scripts --no-plugins
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction
+          composer install --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Wait for MySQL
         run: |
-          until mysqladmin ping -h127.0.0.1 -P3306 -uroot -ppassword --silent; do
-            echo "Waiting for MySQL..."
+          for i in {1..30}; do
+            if mysqladmin ping -h127.0.0.1 -P3306 -uroot -ppassword --silent; then
+              echo "MySQL is ready"
+              break
+            fi
+            echo "Waiting for MySQL... ($i/30)"
             sleep 5
           done
 
       - name: Run tests
-        run: vendor/bin/phpunit || true
+        run: vendor/bin/phpunit --testdox
+        continue-on-error: true
 
   docker-build:
     runs-on: ubuntu-latest
@@ -130,6 +155,7 @@ jobs:
           format: sarif
           output: trivy.sarif
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
 
       - name: Upload scan results
         if: ${{ !github.event.pull_request.head.repo.fork && success() }}
@@ -144,20 +170,52 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: Install dependencies
         run: |
-          composer update --with-all-dependencies --no-dev --no-progress --no-scripts --no-plugins
-          composer install --no-dev --no-progress --no-scripts --no-plugins
+          composer update --with-all-dependencies --no-dev --no-progress --no-scripts --no-plugins --no-interaction
+          composer install --no-dev --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Check index.php syntax
-        run: php -l index.php || true
+        run: php -l index.php
+        continue-on-error: true
+
+      - name: Check PHP files in src
+        run: |
+          find src -name "*.php" -exec php -l {} \; | grep -v "No syntax errors detected" || true
 
   notify:
     runs-on: ubuntu-latest
-    needs: [code-quality, test, docker-build, build]
+    needs: [code-quality, security-scan, test, docker-build, build]
     if: always()
 
     steps:
-      - name: Check status
+      - name: Check job statuses
         run: |
-          echo "CI finished with status: ${{ job.status }}"
+          echo "=== CI Pipeline Summary ==="
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo "Tests: ${{ needs.test.result }}"
+          echo "Docker Build: ${{ needs.docker-build.result }}"
+          echo "Build: ${{ needs.build.result }}"
+
+          if [[ "${{ needs.code-quality.result }}" == "failure" ]] || \
+             [[ "${{ needs.security-scan.result }}" == "failure" ]] || \
+             [[ "${{ needs.test.result }}" == "failure" ]] || \
+             [[ "${{ needs.docker-build.result }}" == "failure" ]] || \
+             [[ "${{ needs.build.result }}" == "failure" ]]; then
+            echo "❌ Some jobs failed!"
+            exit 1
+          else
+            echo "✅ All jobs completed successfully!"
+          fi

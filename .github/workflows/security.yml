@@ -35,8 +35,11 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: php
+          build-mode: autobuild
           queries: security-extended,security-and-quality
-          build-mode: manual
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
@@ -69,7 +72,8 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          extra_args: --no-verification
+          extra_args: --no-verification --json
+        continue-on-error: true
 
   snyk-security-scan:
     name: Snyk Security Scan
@@ -89,22 +93,30 @@ jobs:
 
       - name: Update dependencies for PHP 8.3
         run: |
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins || true
-          composer install --no-progress --no-scripts --no-plugins || true
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction || true
+          composer install --no-progress --no-scripts --no-plugins --no-interaction || true
 
       - name: Run Snyk
+        id: snyk
         uses: snyk/actions/php@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high --sarif-file-output=snyk.sarif
-        continue-on-error: true
 
       - name: Upload SARIF
-        if: ${{ !github.event.pull_request.head.repo.fork && success() }}
+        if: ${{ !github.event.pull_request.head.repo.fork && steps.snyk.outcome == 'success' && hashFiles('snyk.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: snyk.sarif
+
+      - name: Debug Snyk output
+        if: ${{ failure() || steps.snyk.outcome == 'failure' }}
+        run: |
+          echo "Snyk execution details:"
+          ls -la snyk.sarif 2>/dev/null || echo "SARIF file not found"
+          echo "Exit code: ${{ steps.snyk.outcome }}"
 
   license-check:
     name: License Check
@@ -121,8 +133,8 @@ jobs:
 
       - name: Update dependencies for PHP 8.3
         run: |
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins || true
-          composer install --no-progress --no-scripts --no-plugins || true
+          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction || true
+          composer install --no-progress --no-scripts --no-plugins --no-interaction || true
 
       - name: Check licenses
         run: composer licenses

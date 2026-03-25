@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main, master, feature/workflows]
+    branches: [main, master]
   pull_request:
     branches: [main, master]
 
@@ -25,7 +25,7 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
           coverage: none
           tools: composer, cs2pr
 
@@ -41,9 +41,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: |
-          composer install --no-progress --no-scripts --no-plugins --no-interaction || \
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction
+        run: composer install --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Validate composer
         run: composer validate --strict --no-check-publish || true
@@ -53,12 +51,10 @@ jobs:
           find src tests -name "*.php" -exec php -l {} \; 2>&1 | grep -v "No syntax errors detected" || true
 
       - name: PHPStan
-        if: false # Temporarily disable if it's causing issues
         run: |
           vendor/bin/phpstan analyse src --error-format=github --no-progress || true
 
       - name: PHP CS Fixer
-        if: false # Temporarily disable if it's causing issues
         run: |
           vendor/bin/php-cs-fixer fix --dry-run --diff --format=checkstyle | cs2pr || true
 
@@ -86,7 +82,7 @@ jobs:
 
     strategy:
       matrix:
-        php: ["8.3"]
+        php: ["8.4"]
 
     services:
       mysql:
@@ -119,9 +115,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: |
-          composer install --no-progress --no-scripts --no-plugins --no-interaction || \
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction
+        run: composer install --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Wait for MySQL
         run: |
@@ -196,9 +190,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: |
-          composer install --no-dev --no-progress --no-scripts --no-plugins --no-interaction || \
-          composer update --with-all-dependencies --no-dev --no-progress --no-scripts --no-plugins --no-interaction
+        run: composer install --no-dev --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Check PHP files syntax
         run: |

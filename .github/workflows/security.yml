@@ -2,7 +2,7 @@ name: Security Scanning
 
 on:
   push:
-    branches: [main, master, feature/workflows]
+    branches: [main, master]
   pull_request:
     branches: [main, master]
   schedule:
@@ -36,6 +36,11 @@ jobs:
         with:
           languages: javascript-typescript
           queries: security-extended,security-and-quality
+          config: |
+            paths-ignore:
+              - '**/*.php'
+              - '**/*.html'
+              - '**/*.css'
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
@@ -84,13 +89,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
           coverage: none
 
       - name: Install dependencies
-        run: |
-          composer install --no-progress --no-scripts --no-plugins --no-interaction || \
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction
+        run: composer install --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Run Snyk
         id: snyk
@@ -124,13 +127,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
           coverage: none
 
       - name: Install dependencies
-        run: |
-          composer install --no-progress --no-scripts --no-plugins --no-interaction || \
-          composer update --with-all-dependencies --no-progress --no-scripts --no-plugins --no-interaction
+        run: composer install --no-progress --no-scripts --no-plugins --no-interaction
 
       - name: Check licenses
         run: composer licenses

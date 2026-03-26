@@ -20,4 +20,9 @@ if (getenv('APP_ENV') === 'development') {
 
 // Initialize application with DI container
 $app = \Core\Application::getInstance();
+$container = $app->getContainer();
+
+// Make container available globally for API controllers
+$GLOBALS['container'] = $container;
+
 $app->run();

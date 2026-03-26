@@ -26,6 +26,19 @@ class Router
     $this->post('register', 'UserController', 'register');
     $this->get('logout', 'UserController', 'logout');
 
+    // Define API routes
+    $this->get('api/v1/messages', 'API\MessagesController', 'index');
+    $this->post('api/v1/messages', 'API\MessagesController', 'create');
+    $this->get('api/v1/messages/{id}', 'API\MessagesController', 'show');
+    $this->put('api/v1/messages/{id}', 'API\MessagesController', 'update');
+    $this->delete('api/v1/messages/{id}', 'API\MessagesController', 'delete');
+    $this->patch('api/v1/messages/{id}/status', 'API\MessagesController', 'toggleStatus');
+
+    $this->post('api/v1/auth/login', 'API\AuthController', 'login');
+    $this->post('api/v1/auth/logout', 'API\AuthController', 'logout');
+    $this->post('api/v1/auth/register', 'API\AuthController', 'register');
+    $this->get('api/v1/auth/me', 'API\AuthController', 'me');
+
     // Test routes for error handling (only in development)
     if ($this->isDevelopmentMode()) {
       $this->get('test/error', 'TestController', 'triggerError');
@@ -63,6 +76,24 @@ class Router
   public function post(string $path, string $controller, string $method): self
   {
     $this->routes['POST'][$this->normalizePath($path)] = ['controller' => $controller, 'method' => $method];
+    return $this;
+  }
+
+  public function put(string $path, string $controller, string $method): self
+  {
+    $this->routes['PUT'][$this->normalizePath($path)] = ['controller' => $controller, 'method' => $method];
+    return $this;
+  }
+
+  public function delete(string $path, string $controller, string $method): self
+  {
+    $this->routes['DELETE'][$this->normalizePath($path)] = ['controller' => $controller, 'method' => $method];
+    return $this;
+  }
+
+  public function patch(string $path, string $controller, string $method): self
+  {
+    $this->routes['PATCH'][$this->normalizePath($path)] = ['controller' => $controller, 'method' => $method];
     return $this;
   }
 
@@ -121,13 +152,26 @@ class Router
       throw new \Exception("Controller {$controllerClass} not found");
     }
 
-    // Use DI container to create controller instance
-    $controller = $this->container->make($controllerClass);
+    // Create controller instance with proper dependency injection
+    $controller = $this->createController($controllerClass);
 
     if (!method_exists($controller, $method)) {
       throw new \Exception("Method {$method} not found in {$controllerClass}");
     }
 
     $controller->$method();
+  }
+
+  private function createController(string $controllerClass): object
+  {
+    // For API controllers, we need to handle them differently since they don't extend BaseController
+    if (strpos($controllerClass, 'API\\') !== false) {
+      // API controllers don't need MessageService and UserService from BaseController
+      // They handle their own service dependencies
+      return new $controllerClass();
+    }
+
+    // For regular controllers, use the container to inject dependencies
+    return $this->container->make($controllerClass);
   }
 }

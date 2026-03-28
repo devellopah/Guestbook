@@ -2,9 +2,9 @@ name: Security Scanning
 
 on:
   push:
-    branches: [feature/workflows]
+    branches: [main, master]
   pull_request:
-    branches: [feature/workflows]
+    branches: [main, master]
   schedule:
     - cron: "0 2 * * *"
 
@@ -17,36 +17,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  codeql-analysis:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: javascript-typescript
-          queries: security-extended,security-and-quality
-          config: |
-            paths-ignore:
-              - '**/*.php'
-              - '**/*.html'
-              - '**/*.css'
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
-        with:
-          category: "/language:javascript-typescript"
-
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest

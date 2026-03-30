@@ -39,4 +39,4 @@ build
 build/coverage
 
 # Project specific
-improvements.txt
+# WORKPLAN.md - removed from gitignore, should be tracked

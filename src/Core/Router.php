@@ -41,6 +41,7 @@ class Router
     // Route-specific middleware
     $this->routeMiddleware = [
       'auth' => AuthMiddleware::class,
+      'jwt' => JwtMiddleware::class,
       'cors' => CORSMiddleware::class,
       'logging' => LoggingMiddleware::class,
     ];
@@ -64,19 +65,21 @@ class Router
 
     // API routes with authentication middleware
     $this->group('api/v1', function () {
-      // Auth routes
-      $this->post('auth/login', 'API\AuthController', 'login');
-      $this->post('auth/logout', 'API\AuthController', 'logout');
-      $this->post('auth/register', 'API\AuthController', 'register');
-      $this->get('auth/me', 'API\AuthController', 'me');
+      // JWT auth routes
+      $this->post('auth/login', 'API\JwtController', 'login');
+      $this->post('auth/register', 'API\JwtController', 'register');
+      $this->post('auth/refresh', 'API\JwtController', 'refresh');
+      $this->post('auth/logout', 'API\JwtController', 'logout');
+      $this->get('auth/me', 'API\JwtController', 'me');
+      $this->get('auth/validate', 'API\JwtController', 'validate');
 
-      // Protected message routes
-      $this->get('messages', 'API\MessagesController', 'index');
-      $this->post('messages', 'API\MessagesController', 'create', ['auth']);
+      // Protected message routes (JWT auth)
+      $this->get('messages', 'API\MessagesController', 'index', ['jwt']);
+      $this->post('messages', 'API\MessagesController', 'create', ['jwt']);
       $this->get('messages/{id}', 'API\MessagesController', 'show');
-      $this->put('messages/{id}', 'API\MessagesController', 'update', ['auth']);
-      $this->delete('messages/{id}', 'API\MessagesController', 'delete', ['auth']);
-      $this->patch('messages/{id}/status', 'API\MessagesController', 'toggleStatus', ['auth']);
+      $this->put('messages/{id}', 'API\MessagesController', 'update', ['jwt']);
+      $this->delete('messages/{id}', 'API\MessagesController', 'delete', ['jwt']);
+      $this->patch('messages/{id}/status', 'API\MessagesController', 'toggleStatus', ['jwt']);
     });
 
     // Test routes for error handling (only in development)

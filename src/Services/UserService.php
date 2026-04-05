@@ -89,4 +89,25 @@ class UserService extends BaseService implements UserServiceInterface
   {
     return User::usernameExists($username);
   }
+
+  // Additional methods for JWT controller
+  public function findUserById(int $id): ?array
+  {
+    $user = $this->getUserById($id);
+    return $user ? $user->toArray() : null;
+  }
+
+  public function createUserJwt(array $data): ?array
+  {
+    try {
+      $user = $this->createUser(
+        $data['name'],
+        $data['email'],
+        $data['password']
+      );
+      return $user->toArray();
+    } catch (Exception $e) {
+      return null;
+    }
+  }
 }

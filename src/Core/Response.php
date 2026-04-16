@@ -178,22 +178,24 @@ class Response
   public function send(): void
   {
     // Set HTTP status code
-    http_response_code($this->statusCode);
+    if (!headers_sent()) {
+      http_response_code($this->statusCode);
 
-    // Set headers
-    foreach ($this->headers as $name => $value) {
-      header("$name: $value");
-    }
+      // Set headers
+      foreach ($this->headers as $name => $value) {
+        header("$name: $value");
+      }
 
-    // Set CORS headers if not already set
-    if (!isset($this->headers['Access-Control-Allow-Origin'])) {
-      header('Access-Control-Allow-Origin: *');
-    }
-    if (!isset($this->headers['Access-Control-Allow-Methods'])) {
-      header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    }
-    if (!isset($this->headers['Access-Control-Allow-Headers'])) {
-      header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+      // Set CORS headers if not already set
+      if (!isset($this->headers['Access-Control-Allow-Origin'])) {
+        header('Access-Control-Allow-Origin: *');
+      }
+      if (!isset($this->headers['Access-Control-Allow-Methods'])) {
+        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
+      }
+      if (!isset($this->headers['Access-Control-Allow-Headers'])) {
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+      }
     }
 
     // Handle OPTIONS preflight requests

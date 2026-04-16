@@ -94,7 +94,13 @@ class UserService extends BaseService implements UserServiceInterface
   public function findUserById(int $id): ?array
   {
     $user = $this->getUserById($id);
-    return $user ? $user->toArray() : null;
+    return $user ? [
+      'id' => $user->getId(),
+      'email' => $user->getEmail(),
+      'name' => $user->getName(),
+      'role' => $user->getRole(),
+      'created_at' => $user->getCreatedAt()
+    ] : null;
   }
 
   public function createUserJwt(array $data): ?array
@@ -105,7 +111,13 @@ class UserService extends BaseService implements UserServiceInterface
         $data['email'],
         $data['password']
       );
-      return $user->toArray();
+      return [
+        'id' => $user->getId(),
+        'email' => $user->getEmail(),
+        'name' => $user->getName(),
+        'role' => $user->getRole(),
+        'created_at' => $user->getCreatedAt()
+      ];
     } catch (Exception $e) {
       return null;
     }

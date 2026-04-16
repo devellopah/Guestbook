@@ -31,12 +31,17 @@ abstract class Middleware
       function ($next, $middleware) {
         return function (Request $request) use ($middleware, $next) {
           $instance = new $middleware();
-          return $instance->handle($request, $next);
+          $response = $instance->handle($request, $next);
+          return $response instanceof Response ? $response : Response::create();
         };
       },
-      $finalHandler
+      function (Request $request) use ($finalHandler) {
+        $response = $finalHandler($request);
+        return $response instanceof Response ? $response : Response::create();
+      }
     );
 
-    return $pipeline($request);
+    $result = $pipeline($request);
+    return $result instanceof Response ? $result : Response::create();
   }
 }

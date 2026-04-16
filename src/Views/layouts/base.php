@@ -1,19 +1,3 @@
-<?php
-// Global Exception Handler
-set_exception_handler(function ($exception) {
-  error_log("Uncaught exception: " . $exception->getMessage());
-  http_response_code(500);
-  echo "<h1>System Error</h1><p>We're experiencing technical difficulties. Please try again later.</p>";
-  die();
-});
-
-// Security Headers
-header("X-Frame-Options: DENY");
-header("X-Content-Type-Options: nosniff");
-header("X-XSS-Protection: 1; mode=block");
-header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 

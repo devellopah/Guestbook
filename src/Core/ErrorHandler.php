@@ -42,13 +42,15 @@ class ErrorHandler
     // Set HTTP status code
     $statusCode = self::getStatusCode($exception);
 
-    // Clear any output that might have been started
-    if (ob_get_level()) {
-      ob_clean();
+    // Clear ALL output buffers completely
+    while (ob_get_level()) {
+      ob_end_clean();
     }
 
     // Set response headers
-    http_response_code($statusCode);
+    if (!headers_sent()) {
+      http_response_code($statusCode);
+    }
 
     // Render error page
     self::renderErrorPage($exception, $statusCode, $isDebug);
@@ -65,7 +67,7 @@ class ErrorHandler
 
   private static function logException(\Throwable $exception): void
   {
-    // Log to system error log (simpler approach)
+    // Log to system error log
     $timestamp = date('Y-m-d H:i:s');
     $message = sprintf(
       "[%s] %s: %s in %s:%d",
@@ -77,6 +79,29 @@ class ErrorHandler
     );
 
     error_log($message);
+
+    // Log to custom errors.log file
+    $logDir = __DIR__ . '/../../logs';
+
+    try {
+      if (!is_dir($logDir)) {
+        mkdir($logDir, 0777, true);
+        chmod($logDir, 0777);
+      }
+
+      $logFile = $logDir . '/errors.log';
+      $trace = $exception->getTraceAsString();
+      $fullMessage = $message . PHP_EOL . "Stack trace:" . PHP_EOL . $trace . PHP_EOL . str_repeat('-', 100) . PHP_EOL;
+
+      file_put_contents($logFile, $fullMessage, FILE_APPEND | LOCK_EX);
+
+      if (file_exists($logFile)) {
+        chmod($logFile, 0666);
+      }
+    } catch (\Throwable $logException) {
+      // Skip custom file logging if there is permission error
+      // Error is already written to system error log anyway
+    }
   }
 
   private static function isDebugMode(): bool

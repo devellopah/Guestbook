@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use Core\Request;
+use Core\Response;
 use Services\MessageService;
 use Services\UserService;
 

@@ -2,23 +2,30 @@
 
 namespace Controllers\API;
 
-use Core\BaseController;
+use Core\BaseApiController;
+use Core\Request;
+use Core\Response;
 use Services\JwtService;
 use Services\AuthService;
 use Services\UserService;
 
-class JwtController extends BaseController
+class JwtController extends BaseApiController
 {
-  private JwtService $jwtService;
-  private AuthService $authService;
-  private UserService $userService;
+  protected JwtService $jwtService;
+  protected AuthService $authService;
+  protected UserService $userService;
 
-  public function __construct()
+  public function __construct(BaseApiController $baseApiController)
   {
-    parent::__construct();
+    parent::__construct(
+      $baseApiController->messageService,
+      $baseApiController->userService,
+      $baseApiController->request,
+      $baseApiController->response
+    );
     $this->jwtService = new JwtService();
-    $this->authService = new AuthService();
-    $this->userService = new UserService();
+    $this->authService = new AuthService($baseApiController->userService);
+    $this->userService = $baseApiController->userService;
   }
 
   /**
@@ -136,7 +143,7 @@ class JwtController extends BaseController
       }
 
       // Get user info
-      $user = $this->userService->getById($payload['user_id']);
+      $user = $this->userService->findUserById($payload['user_id']);
 
       if (!$user) {
         $this->response->error('User not found', 404);
@@ -170,7 +177,7 @@ class JwtController extends BaseController
       }
 
       // Register user
-      $user = $this->userService->create([
+      $user = $this->userService->createUserJwt([
         'email' => $data['email'],
         'password' => $data['password'],
         'name' => $data['name'],

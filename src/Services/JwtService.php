@@ -2,6 +2,8 @@
 
 namespace Services;
 
+use Core\Request;
+use Core\Response;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\ExpiredException;

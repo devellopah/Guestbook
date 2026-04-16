@@ -29,7 +29,11 @@ class JwtMiddleware extends Middleware
 
     if (!$token) {
       $response = Response::create();
-      $response->error('Token not provided', 401);
+      $response->setStatusCode(401);
+      $response->setBody(json_encode([
+        'error' => 'Token not provided',
+        'status' => 401
+      ]));
       return $response;
     }
 
@@ -38,7 +42,11 @@ class JwtMiddleware extends Middleware
 
     if (!$payload) {
       $response = Response::create();
-      $response->error('Invalid or expired token', 401);
+      $response->setStatusCode(401);
+      $response->setBody(json_encode([
+        'error' => 'Invalid or expired token',
+        'status' => 401
+      ]));
       return $response;
     }
 

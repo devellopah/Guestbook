@@ -2,6 +2,8 @@
 
 namespace Models;
 
+use Core\Database;
+use Core\QueryBuilder;
 use Exception;
 use Valitron\Validator;
 
@@ -101,5 +103,39 @@ abstract class BaseModel
   protected function getFillableFields(): array
   {
     return $this->fillable;
+  }
+
+  /**
+   * Get QueryBuilder instance for this model
+   */
+  public static function query(): QueryBuilder
+  {
+    return new QueryBuilder(Database::getInstance(), static::$table);
+  }
+
+  /**
+   * Get all records from table
+   */
+  public static function all(): array
+  {
+    return static::query()->get();
+  }
+
+  /**
+   * Find record by id
+   */
+  public static function find(int $id): ?self
+  {
+    $row = static::query()->where('id', $id)->first();
+    return $row ? new static($row) : null;
+  }
+
+  /**
+   * Add where clause
+   */
+  public static function where(string $column, mixed $operator = null, mixed $value = null): QueryBuilder
+  {
+    $query = static::query();
+    return call_user_func_array([$query, 'where'], func_get_args());
   }
 }

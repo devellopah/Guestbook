@@ -61,34 +61,23 @@ class Message extends BaseModel
 
   protected function create(): bool
   {
-    $sql = "INSERT INTO messages (user_id, message, status) VALUES (:user_id, :message, :status)";
-    $params = [
+    $this->id = static::query()->insert([
       'user_id' => $this->user_id,
       'message' => $this->message,
       'status' => $this->status
-    ];
+    ]);
 
-    $stmt = Database::query($sql, $params);
-
-    if ($stmt->rowCount() > 0) {
-      $this->id = (int) Database::lastInsertId();
-      return true;
-    }
-
-    return false;
+    return $this->id > 0;
   }
 
   protected function update(): bool
   {
-    $sql = "UPDATE messages SET message = :message, status = :status WHERE id = :id";
-    $params = [
-      'id' => $this->id,
-      'message' => $this->message,
-      'status' => $this->status
-    ];
-
-    $stmt = Database::query($sql, $params);
-    return $stmt->rowCount() > 0;
+    return static::query()
+      ->where('id', $this->id)
+      ->update([
+        'message' => $this->message,
+        'status' => $this->status
+      ]) > 0;
   }
 
   public static function findById(int $id): ?self
@@ -177,8 +166,9 @@ class Message extends BaseModel
     }
 
     try {
-      $stmt = Database::query("DELETE FROM messages WHERE id = ?", [$this->id]);
-      return $stmt->rowCount() > 0;
+      return static::query()
+        ->where('id', $this->id)
+        ->delete() > 0;
     } catch (Exception $e) {
       error_log("Message delete error: " . $e->getMessage());
       return false;
@@ -193,11 +183,11 @@ class Message extends BaseModel
 
     try {
       $this->status = $this->status ? 0 : 1;
-      $stmt = Database::query("UPDATE messages SET status = :status WHERE id = :id", [
-        'status' => $this->status,
-        'id' => $this->id
-      ]);
-      return $stmt->rowCount() > 0;
+      return static::query()
+        ->where('id', $this->id)
+        ->update([
+          'status' => $this->status
+        ]) > 0;
     } catch (Exception $e) {
       error_log("Message toggleStatus error: " . $e->getMessage());
       return false;

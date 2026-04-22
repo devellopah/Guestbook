@@ -79,43 +79,31 @@ class User extends BaseModel
   {
     $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
 
-    $sql = "INSERT INTO users (name, email, password, role) VALUES (:name, :email, :password, :role)";
-    $params = [
+    $this->id = static::query()->insert([
       'name' => $this->name,
       'email' => $this->email,
       'password' => $hashedPassword,
       'role' => $this->role
-    ];
+    ]);
 
-    $stmt = Database::query($sql, $params);
-
-    if ($stmt->rowCount() > 0) {
-      $this->id = (int) Database::lastInsertId();
-      return true;
-    }
-
-    return false;
+    return $this->id > 0;
   }
 
   protected function update(): bool
   {
-    $sql = "UPDATE users SET name = :name, email = :email";
-    $params = [
-      'id' => $this->id,
+    $data = [
       'name' => $this->name,
       'email' => $this->email
     ];
 
     // Only update password if it's provided and not empty
     if (!empty($this->password)) {
-      $sql .= ", password = :password";
-      $params['password'] = password_hash($this->password, PASSWORD_DEFAULT);
+      $data['password'] = password_hash($this->password, PASSWORD_DEFAULT);
     }
 
-    $sql .= " WHERE id = :id";
-
-    $stmt = Database::query($sql, $params);
-    return $stmt->rowCount() > 0;
+    return static::query()
+      ->where('id', $this->id)
+      ->update($data) > 0;
   }
 
   public function authenticate(string $password): bool
@@ -221,8 +209,9 @@ class User extends BaseModel
     }
 
     try {
-      $stmt = Database::query("DELETE FROM users WHERE id = ?", [$this->id]);
-      return $stmt->rowCount() > 0;
+      return static::query()
+        ->where('id', $this->id)
+        ->delete() > 0;
     } catch (Exception $e) {
       error_log("User delete error: " . $e->getMessage());
       return false;

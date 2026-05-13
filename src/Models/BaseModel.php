@@ -55,14 +55,8 @@ abstract class BaseModel
   public static function findById(int $id): ?self
   {
     try {
-      $stmt = Database::query("SELECT * FROM " . static::$table . " WHERE id = ?", [$id]);
-      $row = $stmt->fetch();
-
-      if ($row) {
-        return new static($row);
-      }
-
-      return null;
+      $row = static::query()->where('id', $id)->first();
+      return $row ? new static($row) : null;
     } catch (Exception $e) {
       error_log(get_class() . " findById error: " . $e->getMessage());
       return null;
@@ -76,8 +70,9 @@ abstract class BaseModel
     }
 
     try {
-      $stmt = Database::query("DELETE FROM " . static::$table . " WHERE id = ?", [$this->id]);
-      return $stmt->rowCount() > 0;
+      return static::query()
+        ->where('id', $this->id)
+        ->delete() > 0;
     } catch (Exception $e) {
       error_log(get_class($this) . " delete error: " . $e->getMessage());
       return false;

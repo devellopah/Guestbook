@@ -83,18 +83,14 @@ class Message extends BaseModel
   public static function findById(int $id): ?self
   {
     try {
-      $stmt = Database::query("
-        SELECT m.*, u.name as user_name
-        FROM messages m
-        JOIN users u ON u.id = m.user_id
-        WHERE m.id = ?
-      ", [$id]);
-
-      $row = $stmt->fetch();
+      $row = static::query()
+        ->select('m.*, u.name as user_name')
+        ->join('users u', 'u.id', '=', 'm.user_id')
+        ->where('m.id', $id)
+        ->first();
 
       if ($row) {
         $message = new self($row);
-        // Create user object for the message
         $user = new User([
           'id' => $row['user_id'],
           'name' => $row['user_name']
@@ -113,23 +109,21 @@ class Message extends BaseModel
   public static function getAll(int $limit = 10, int $offset = 0, bool $onlyActive = true): array
   {
     try {
-      $where = $onlyActive ? 'WHERE m.status = 1' : '';
-      $sql = "
-        SELECT m.*, u.name as user_name, DATE_FORMAT(m.created_at, '%d.%m.%Y %H:%i') AS created_at_formatted
-        FROM messages m
-        JOIN users u ON u.id = m.user_id
-        {$where}
-        ORDER BY m.id DESC
-        LIMIT :limit OFFSET :offset
-      ";
+      $query = static::query()
+        ->select('m.*, u.name as user_name')
+        ->join('users u', 'u.id', '=', 'm.user_id')
+        ->orderBy('m.id', 'DESC')
+        ->limit($limit)
+        ->offset($offset);
 
-      $stmt = Database::query($sql, [
-        'limit' => $limit,
-        'offset' => $offset
-      ]);
+      if ($onlyActive) {
+        $query->where('m.status', 1);
+      }
+
+      $rows = $query->get();
 
       $messages = [];
-      foreach ($stmt->fetchAll() as $row) {
+      foreach ($rows as $row) {
         $message = new self($row);
         $user = new User([
           'id' => $row['user_id'],
@@ -149,10 +143,11 @@ class Message extends BaseModel
   public static function getCount(bool $onlyActive = true): int
   {
     try {
-      $where = $onlyActive ? 'WHERE status = 1' : '';
-      $sql = "SELECT COUNT(*) FROM messages {$where}";
-      $stmt = Database::query($sql);
-      return (int) $stmt->fetchColumn();
+      $query = static::query();
+      if ($onlyActive) {
+        $query->where('status', 1);
+      }
+      return $query->count();
     } catch (Exception $e) {
       error_log("Message getCount error: " . $e->getMessage());
       return 0;

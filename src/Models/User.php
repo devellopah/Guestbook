@@ -118,14 +118,11 @@ class User extends BaseModel
   public static function findByEmail(string $email): ?self
   {
     try {
-      $stmt = Database::query("SELECT * FROM users WHERE email = ?", [$email]);
-      $row = $stmt->fetch();
+      $row = static::query()
+        ->where('email', $email)
+        ->first();
 
-      if ($row) {
-        return new self($row);
-      }
-
-      return null;
+      return $row ? new self($row) : null;
     } catch (Exception $e) {
       error_log("User findByEmail error: " . $e->getMessage());
       return null;
@@ -135,14 +132,11 @@ class User extends BaseModel
   public static function findByUsername(string $username): ?self
   {
     try {
-      $stmt = Database::query("SELECT * FROM users WHERE name = ?", [$username]);
-      $row = $stmt->fetch();
+      $row = static::query()
+        ->where('name', $username)
+        ->first();
 
-      if ($row) {
-        return new self($row);
-      }
-
-      return null;
+      return $row ? new self($row) : null;
     } catch (Exception $e) {
       error_log("User findByUsername error: " . $e->getMessage());
       return null;
@@ -152,14 +146,11 @@ class User extends BaseModel
   public static function findById(int $id): ?self
   {
     try {
-      $stmt = Database::query("SELECT * FROM users WHERE id = ?", [$id]);
-      $row = $stmt->fetch();
+      $row = static::query()
+        ->where('id', $id)
+        ->first();
 
-      if ($row) {
-        return new self($row);
-      }
-
-      return null;
+      return $row ? new self($row) : null;
     } catch (Exception $e) {
       error_log("User findById error: " . $e->getMessage());
       return null;
@@ -169,8 +160,9 @@ class User extends BaseModel
   public static function emailExists(string $email): bool
   {
     try {
-      $stmt = Database::query("SELECT COUNT(*) FROM users WHERE email = ?", [$email]);
-      return $stmt->fetchColumn() > 0;
+      return static::query()
+        ->where('email', $email)
+        ->count() > 0;
     } catch (Exception $e) {
       error_log("User emailExists error: " . $e->getMessage());
       return false;
@@ -180,8 +172,9 @@ class User extends BaseModel
   public static function usernameExists(string $username): bool
   {
     try {
-      $stmt = Database::query("SELECT COUNT(*) FROM users WHERE name = ?", [$username]);
-      return $stmt->fetchColumn() > 0;
+      return static::query()
+        ->where('name', $username)
+        ->count() > 0;
     } catch (Exception $e) {
       error_log("User usernameExists error: " . $e->getMessage());
       return false;
@@ -191,11 +184,11 @@ class User extends BaseModel
   public static function getAll(int $limit = 10, int $offset = 0): array
   {
     try {
-      $stmt = Database::query("SELECT * FROM users ORDER BY id DESC LIMIT :limit OFFSET :offset", [
-        'limit' => $limit,
-        'offset' => $offset
-      ]);
-      return $stmt->fetchAll();
+      return static::query()
+        ->orderBy('id', 'DESC')
+        ->limit($limit)
+        ->offset($offset)
+        ->get();
     } catch (Exception $e) {
       error_log("User getAll error: " . $e->getMessage());
       return [];

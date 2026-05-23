@@ -4,6 +4,8 @@ namespace Controllers;
 
 use Core\BaseController;
 use Exception;
+use Queue\QueueService;
+use Queue\Jobs\NewMessageNotificationJob;
 
 class MessageController extends BaseController
 {
@@ -53,6 +55,18 @@ class MessageController extends BaseController
     try {
       $user = $this->getUser();
       $message = $this->messageService->createMessage($user['id'], $data['message']);
+
+      // Dispatch notification to queue (fire and forget)
+      try {
+        $queue = new QueueService();
+        $queue->push(new NewMessageNotificationJob(
+          $message['id'] ?? 0,
+          $user['name'] ?? 'Unknown',
+          $data['message']
+        ));
+      } catch (\Throwable $qe) {
+        error_log("Queue push error: " . $qe->getMessage());
+      }
 
       $this->flash('success', 'Message added');
       $this->redirect('/');

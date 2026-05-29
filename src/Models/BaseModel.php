@@ -2,7 +2,7 @@
 
 namespace Models;
 
-use Core\Database;
+use Models\Database;
 use Core\QueryBuilder;
 use Exception;
 use Valitron\Validator;
@@ -10,7 +10,7 @@ use Valitron\Validator;
 abstract class BaseModel
 {
   protected ?int $id = null;
-  protected string $table;
+  protected static string $table = '';
   protected array $fillable = [];
   protected array $hidden = [];
 
@@ -90,9 +90,9 @@ abstract class BaseModel
     $this->id = $id;
   }
 
-  protected function getTableName(): string
+  protected static function getTableName(): string
   {
-    return $this->table;
+    return static::$table;
   }
 
   protected function getFillableFields(): array

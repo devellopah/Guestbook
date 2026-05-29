@@ -8,7 +8,7 @@ use Models\Database;
 
 class Message extends BaseModel
 {
-  protected string $table = 'messages';
+  protected static string $table = 'messages';
   protected array $fillable = ['user_id', 'message', 'status'];
 
   protected ?int $user_id = null;

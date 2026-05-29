@@ -7,7 +7,7 @@ namespace Core;
  */
 class QueryBuilder
 {
-  protected Database $db;
+  protected \PDO $db;
   protected string $table;
   protected string $select = '*';
   protected array $wheres = [];
@@ -19,7 +19,7 @@ class QueryBuilder
   protected ?string $groupBy = null;
   protected array $having = [];
 
-  public function __construct(Database $db, string $table)
+  public function __construct(\PDO $db, string $table)
   {
     $this->db = $db;
     $this->table = $table;

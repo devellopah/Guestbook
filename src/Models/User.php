@@ -9,7 +9,7 @@ use Core\Role;
 
 class User extends BaseModel
 {
-  protected string $table = 'users';
+  protected static string $table = 'users';
   protected array $fillable = ['name', 'email', 'password', 'role'];
 
   protected string $name = '';
